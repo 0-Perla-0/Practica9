@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, Modal, TouchableOpacity, ScrollView, ActivityIndicator, Image } from 'react-native';
-import { Search, Dumbbell, Zap, TriangleAlert, X, PlusCircle } from 'lucide-react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, Modal, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { Search, Dumbbell, Zap, TriangleAlert, X, PlusCircle, Book } from 'lucide-react-native';
 import Card from '../components/Card';
 import { ejerciciosData } from '../data/ejercicios';
-import { fetchExerciseGif, PlaceholderSVG } from '../services/exerciseService';
+import { fetchExerciseDetails } from '../services/exerciseService';
+import MuscleSVG from '../components/MuscleSVG';
 
 const filterGroups = ['Todos', 'Pecho', 'Espalda', 'Hombros', 'Bíceps', 'Tríceps', 'Core', 'Piernas', 'Glúteos', 'Cardio'];
 const filterCategories = ['Todos', 'Fuerza', 'Cardio', 'HIIT', 'Movilidad'];
@@ -13,11 +14,9 @@ const EjerciciosScreen = () => {
   const [search, setSearch] = useState('');
   const [selectedEjercicio, setSelectedEjercicio] = useState(null);
   
-  const [gifUrl, setGifUrl] = useState(null);
-  const [loadingGif, setLoadingGif] = useState(false);
-  const [gifError, setGifError] = useState(false);
+  const [enrichedData, setEnrichedData] = useState(null);
+  const [loadingData, setLoadingData] = useState(false);
 
-  // 3 Layers of filters
   const [activeGroup, setActiveGroup] = useState('Todos');
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [activeDifficulty, setActiveDifficulty] = useState('Todos');
@@ -36,21 +35,18 @@ const EjerciciosScreen = () => {
 
   const handleOpenEjercicio = async (ejercicio) => {
     setSelectedEjercicio(ejercicio);
-    setGifUrl(null);
-    setGifError(false);
+    setEnrichedData(null);
     
     if (ejercicio.exerciseDbId || ejercicio.nombre) {
-      setLoadingGif(true);
+      setLoadingData(true);
       try {
-        const url = await fetchExerciseGif(ejercicio.exerciseDbId, ejercicio.nombre);
-        setGifUrl(url);
+        const details = await fetchExerciseDetails(ejercicio.exerciseDbId, ejercicio.nombre);
+        setEnrichedData(details);
       } catch (error) {
-        setGifError(true);
+        // Fallback silenciado, si falla no mostramos la data enriquecida
       } finally {
-        setLoadingGif(false);
+        setLoadingData(false);
       }
-    } else {
-      setGifError(true);
     }
   };
 
@@ -121,7 +117,6 @@ const EjerciciosScreen = () => {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Modal de Detalle */}
       <Modal
         visible={!!selectedEjercicio}
         transparent={true}
@@ -143,20 +138,11 @@ const EjerciciosScreen = () => {
             
             <ScrollView showsVerticalScrollIndicator={false}>
               
-              {/* Media Section: GIF o Placeholder */}
+              {/* Media Section: MuscleSVG Animado */}
               <View style={styles.mediaContainer}>
-                {loadingGif ? (
-                  <ActivityIndicator size="large" color="#8A2BE2" style={styles.loader} />
-                ) : gifUrl && !gifError ? (
-                  <Image source={{ uri: gifUrl }} style={styles.gifImage} resizeMode="contain" />
-                ) : (
-                  <View style={styles.placeholderContainer}>
-                    <PlaceholderSVG />
-                  </View>
-                )}
+                <MuscleSVG musculo={selectedEjercicio?.musculo} size={180} />
               </View>
 
-              {/* Categoría y Equipo */}
               <View style={styles.tagsContainer}>
                 <View style={styles.tagBadge}>
                   <Text style={styles.tagText}>{selectedEjercicio?.musculo}</Text>
@@ -169,7 +155,6 @@ const EjerciciosScreen = () => {
                 </View>
               </View>
 
-              {/* Recomendaciones (Sets, Reps, Descanso) */}
               <View style={styles.statsRow}>
                 <View style={styles.statBox}>
                   <Text style={styles.statValue}>{selectedEjercicio?.sets_recomendados}</Text>
@@ -185,7 +170,6 @@ const EjerciciosScreen = () => {
                 </View>
               </View>
 
-              {/* Pasos */}
               <Text style={styles.sectionTitle}>Cómo ejecutarlo</Text>
               <View style={styles.stepsContainer}>
                 {selectedEjercicio?.pasos && selectedEjercicio.pasos.map((paso, index) => (
@@ -196,7 +180,29 @@ const EjerciciosScreen = () => {
                 )}
               </View>
 
-              {/* Beneficios */}
+              {/* Data Enriquecida de la API */}
+              {loadingData && (
+                <View style={{flexDirection:'row', alignItems:'center', gap: 8, marginTop: 10, marginBottom: 10}}>
+                  <ActivityIndicator size="small" color="#8A2BE2" />
+                  <Text style={{color:'#A0A0B0'}}>Traduciendo ciencia internacional...</Text>
+                </View>
+              )}
+              {enrichedData && (
+                <View style={styles.enrichedSection}>
+                  <View style={styles.sectionHeader}>
+                    <Book color="#D1A3FF" size={20} />
+                    <Text style={[styles.sectionTitle, { color: '#D1A3FF', marginTop: 0, marginLeft: 8 }]}>Datos Científicos (Inglés)</Text>
+                  </View>
+                  <Text style={styles.bodyText}>
+                    <Text style={{color:'#fff', fontWeight:'bold'}}>Target Muscles: </Text>
+                    {enrichedData.target}, {enrichedData.secondaryMuscles?.join(', ')}
+                  </Text>
+                  {enrichedData.instructions && enrichedData.instructions.map((inst, i) => (
+                    <Text key={i} style={[styles.bodyText, {marginTop:4}]}>- {inst}</Text>
+                  ))}
+                </View>
+              )}
+
               <View style={styles.infoSection}>
                 <View style={styles.sectionHeader}>
                   <Zap color="#00FF7F" size={20} />
@@ -205,7 +211,6 @@ const EjerciciosScreen = () => {
                 <Text style={styles.bodyText}>{selectedEjercicio?.beneficios}</Text>
               </View>
 
-              {/* Contraindicaciones */}
               <View style={styles.infoSection}>
                 <View style={styles.sectionHeader}>
                   <TriangleAlert color="#FF4500" size={20} />
@@ -255,16 +260,12 @@ const styles = StyleSheet.create({
   miniTagsContainer: { flexDirection: 'row', gap: 6 },
   miniTag: { fontSize: 10, color: '#D1A3FF', backgroundColor: 'rgba(138,43,226,0.1)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, overflow: 'hidden' },
 
-  // Modal styles
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: '#16161E', borderTopLeftRadius: 24, borderTopRightRadius: 24, height: '90%', padding: 24, borderTopWidth: 1, borderColor: '#8A2BE2' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   modalTitle: { color: '#fff', fontSize: 24, fontWeight: 'bold', flex: 1 },
   closeButton: { backgroundColor: '#2A2A3A', padding: 8, borderRadius: 20, marginLeft: 16 },
   mediaContainer: { width: '100%', height: 200, backgroundColor: '#0B0B0E', borderRadius: 16, marginBottom: 20, borderWidth: 1, borderColor: 'rgba(138,43,226,0.3)', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
-  loader: { flex: 1 },
-  gifImage: { width: '100%', height: '100%' },
-  placeholderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   tagsContainer: { flexDirection: 'row', marginBottom: 24, gap: 10, flexWrap: 'wrap' },
   tagBadge: { backgroundColor: 'rgba(138, 43, 226, 0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(138, 43, 226, 0.5)' },
   tagText: { color: '#D1A3FF', fontSize: 14, fontWeight: '600' },
@@ -278,6 +279,7 @@ const styles = StyleSheet.create({
   stepsContainer: { marginBottom: 16 },
   stepText: { color: '#E0E0E0', fontSize: 15, lineHeight: 24, marginBottom: 8 },
   bodyText: { color: '#A0A0B0', fontSize: 15, lineHeight: 22 },
+  enrichedSection: { backgroundColor: 'rgba(138,43,226,0.1)', padding: 16, borderRadius: 12, marginTop: 16, borderWidth: 1, borderColor: 'rgba(138,43,226,0.3)' },
   infoSection: { backgroundColor: 'rgba(0, 0, 0, 0.3)', padding: 16, borderRadius: 12, marginTop: 16, borderWidth: 1, borderColor: '#2A2A3A' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   addButton: { backgroundColor: '#00FF7F', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16, borderRadius: 16, marginTop: 24, gap: 8 },

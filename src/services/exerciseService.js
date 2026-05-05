@@ -4,7 +4,49 @@ import { Dumbbell } from 'lucide-react-native';
 const RAPIDAPI_KEY = 'da9e22fa06msh9b20ec0a79beb29p1d7303jsn835764f6f38b'; 
 const BASE_URL = 'https://exercisedb.p.rapidapi.com/exercises';
 
-const gifCache = {};
+const detailsCache = {};
+
+// Queue para evitar 429
+let isRequesting = false;
+const requestQueue = [];
+
+const processQueue = async () => {
+  if (isRequesting || requestQueue.length === 0) return;
+  isRequesting = true;
+
+  const { url, resolve, reject } = requestQueue.shift();
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': RAPIDAPI_KEY,
+        'x-rapidapi-host': 'exercisedb.p.rapidapi.com'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error en la API: ${response.status}`);
+    }
+
+    const data = await response.json();
+    resolve(data);
+  } catch (error) {
+    reject(error);
+  } finally {
+    setTimeout(() => {
+      isRequesting = false;
+      processQueue();
+    }, 500); // 500ms delay
+  }
+};
+
+const queuedFetch = (url) => {
+  return new Promise((resolve, reject) => {
+    requestQueue.push({ url, resolve, reject });
+    processQueue();
+  });
+};
 
 const translationMap = {
   'press de banca': 'bench press',
@@ -59,33 +101,19 @@ const translationMap = {
   'rotación torácica': 'thoracic rotation'
 };
 
-export const fetchExerciseGif = async (exerciseDbId, exerciseName = null) => {
+export const fetchExerciseDetails = async (exerciseDbId, exerciseName = null) => {
   if (!exerciseDbId && !exerciseName) throw new Error('ID o Nombre requerido');
   
-  if (exerciseDbId && gifCache[exerciseDbId]) {
-    return gifCache[exerciseDbId];
+  if (exerciseDbId && detailsCache[exerciseDbId]) {
+    return detailsCache[exerciseDbId];
   }
 
   // Intento 1: Fetch por ID exacto
   try {
-    console.log(`[API] Fetching por ID: ${exerciseDbId}`);
-    const response = await fetch(`${BASE_URL}/exercise/${exerciseDbId}`, {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'exercisedb.p.rapidapi.com'
-      }
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`[API] Respuesta ID ${exerciseDbId}:`, data);
-      if (data && data.gifUrl) {
-        gifCache[exerciseDbId] = data.gifUrl;
-        return data.gifUrl;
-      }
-    } else {
-      console.warn(`[API] Error por ID (${response.status}). Ejecutando fallback...`);
+    const data = await queuedFetch(`${BASE_URL}/exercise/${exerciseDbId}`);
+    if (data) {
+      detailsCache[exerciseDbId] = data;
+      return data;
     }
   } catch (error) {
     console.warn(`[API] Excepción en fetch por ID:`, error);
@@ -95,43 +123,23 @@ export const fetchExerciseGif = async (exerciseDbId, exerciseName = null) => {
   if (exerciseName) {
     try {
       const englishName = translationMap[exerciseName.toLowerCase()] || exerciseName;
-      console.log(`[API] Fallback: Buscando por nombre "${englishName}"`);
-      const searchData = await searchExerciseByName(englishName);
-      
-      console.log(`[API] Respuesta Fallback:`, searchData.length > 0 ? `${searchData.length} resultados encontrados` : searchData);
-      
+      const searchData = await queuedFetch(`${BASE_URL}/name/${englishName}`);
       if (searchData && searchData.length > 0) {
-        const gifUrl = searchData[0].gifUrl;
-        if (gifUrl) {
-          if (exerciseDbId) gifCache[exerciseDbId] = gifUrl; // Guardar bajo el ID solicitado
-          return gifUrl;
-        }
+        if (exerciseDbId) detailsCache[exerciseDbId] = searchData[0];
+        return searchData[0];
       }
     } catch (fallbackError) {
       console.error(`[API] Fallback fallido:`, fallbackError);
     }
   }
 
-  throw new Error('GIF no encontrado en la API (ID y Fallback fallidos)');
+  throw new Error('Detalles no encontrados');
 };
 
 export const searchExerciseByName = async (name) => {
   if (!name) return [];
-
   try {
-    const response = await fetch(`${BASE_URL}/name/${name}`, {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': RAPIDAPI_KEY,
-        'x-rapidapi-host': 'exercisedb.p.rapidapi.com'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error en búsqueda por nombre: ${response.status}`);
-    }
-
-    return await response.json();
+    return await queuedFetch(`${BASE_URL}/name/${name}`);
   } catch (error) {
     console.error('Error searching exercise by name:', error);
     throw error;
