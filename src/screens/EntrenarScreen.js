@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal, Alert, ScrollView } from 'react-native';
-import { ChevronRight, Play, Square, Timer, CheckCircle2, Dumbbell, Plus, Info, AlertTriangle, Check } from 'lucide-react-native';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal, Alert, ScrollView, SectionList, Image, ActivityIndicator } from 'react-native';
+import { ChevronRight, Play, Square, Timer, CheckCircle2, Dumbbell, Plus, Info, Check, X, Trash2 } from 'lucide-react-native';
 import { useIsFocused } from '@react-navigation/native';
 import Card from '../components/Card';
 import { rutinasData } from '../data/rutinas';
 import { ejerciciosData } from '../data/ejercicios';
 import { saveSession, savePR, getRoutines, saveRoutine } from '../storage/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchExerciseGif, PlaceholderSVG } from '../services/exerciseService';
 
 const formatTime = (seconds) => {
   const m = Math.floor(seconds / 60);
@@ -16,14 +17,43 @@ const formatTime = (seconds) => {
 
 const DIAS = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
 
+// Componente para cargar GIFs independientemente
+const ExerciseGif = ({ exerciseDbId, nombre }) => {
+  const [gifUrl, setGifUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadGif = async () => {
+      try {
+        const url = await fetchExerciseGif(exerciseDbId, nombre);
+        if (mounted) setGifUrl(url);
+      } catch (e) {
+        // failed
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    loadGif();
+    return () => { mounted = false; };
+  }, [exerciseDbId, nombre]);
+
+  if (loading) return <View style={styles.gifPlaceholder}><ActivityIndicator color="#8A2BE2" /></View>;
+  if (gifUrl) return <Image source={{ uri: gifUrl }} style={styles.gifImage} resizeMode="cover" />;
+  return <View style={styles.gifPlaceholder}><Dumbbell color="#8A2BE2" size={24} /></View>;
+};
+
 export default function EntrenarScreen() {
   const isFocused = useIsFocused();
   
-  // Tabs & Lists
-  const [activeTab, setActiveTab] = useState('Recomendadas'); // 'Recomendadas' | 'MisRutinas'
+  const [activeTab, setActiveTab] = useState('Recomendadas');
   const [customRoutines, setCustomRoutines] = useState([]);
-  const [activePlan, setActivePlan] = useState(null); // Plan activo para la semana
+  const [activePlan, setActivePlan] = useState(null);
   
+  // Bug 3: View day details
+  const [selectedDay, setSelectedDay] = useState(null); // 'Lunes', etc.
+  const [viewRoutineData, setViewRoutineData] = useState(null); // The routine being inspected
+
   // Creator States
   const [showCreator, setShowCreator] = useState(false);
   const [newRoutineName, setNewRoutineName] = useState('');
@@ -37,11 +67,11 @@ export default function EntrenarScreen() {
     Domingo: { tipo: 'descanso', ejercicios: [] },
   });
   
-  // Exercise Picker for Creator
+  // Exercise Picker
   const [showPicker, setShowPicker] = useState(false);
   const [pickerDay, setPickerDay] = useState('');
 
-  // Active Workout States
+  // Active Workout
   const [activeWorkoutData, setActiveWorkoutData] = useState(null);
   const [sessionSeconds, setSessionSeconds] = useState(0);
   const [restSeconds, setRestSeconds] = useState(0);
@@ -99,6 +129,7 @@ export default function EntrenarScreen() {
         id: `${rej.ejercicioId}_${i}`,
         ejercicioId: rej.ejercicioId,
         nombre: dbExercise ? dbExercise.nombre : 'Ejercicio',
+        exerciseDbId: dbExercise?.exerciseDbId,
         sets
       };
     });
@@ -201,13 +232,21 @@ export default function EntrenarScreen() {
     setShowPicker(false);
   };
 
+  const handleDeleteExercise = (day, index) => {
+    const newDays = { ...newRoutineDays };
+    newDays[day].ejercicios.splice(index, 1);
+    if (newDays[day].ejercicios.length === 0) {
+      newDays[day].tipo = 'descanso';
+    }
+    setNewRoutineDays(newDays);
+  };
+
   const validateAndSaveRoutine = async () => {
     if (!newRoutineName) {
       Alert.alert('Error', 'Debes ponerle nombre a la rutina');
       return;
     }
     
-    // Análisis Inteligente
     let strengthDaysRow = 0;
     let hasLegsPrev = false;
     let totalRestDays = 0;
@@ -272,7 +311,17 @@ export default function EntrenarScreen() {
     }
   };
 
-  // --- RENDERERS ---
+  // SectionList data grouping for Mejora 4
+  const groupedExercises = useMemo(() => {
+    const groups = {};
+    ejerciciosData.forEach(ej => {
+      const title = `${ej.dificultad} • ${ej.categoria} • ${ej.musculo}`;
+      if (!groups[title]) groups[title] = [];
+      groups[title].push(ej);
+    });
+    return Object.keys(groups).sort().map(key => ({ title: key, data: groups[key] }));
+  }, []);
+
   const renderRoutineCard = ({ item }) => (
     <Card style={styles.cardItem}>
       <View style={styles.rutinaHeader}>
@@ -289,17 +338,54 @@ export default function EntrenarScreen() {
         </View>
       )}
 
-      {/* Week preview */}
+      {/* Week preview interactive */}
       <View style={styles.weekPreview}>
         {DIAS.map(d => {
           const isRest = item.dias_semana[d]?.tipo === 'descanso';
+          const isSelected = viewRoutineData?.id === item.id && selectedDay === d;
           return (
-            <View key={d} style={[styles.dayDot, isRest && styles.dayDotRest]}>
-              <Text style={[styles.dayDotText, isRest && styles.dayDotTextRest]}>{d.charAt(0)}</Text>
-            </View>
+            <TouchableOpacity 
+              key={d} 
+              onPress={() => {
+                setViewRoutineData(item);
+                setSelectedDay(d);
+              }}
+              style={[
+                styles.dayDot, 
+                isRest && styles.dayDotRest,
+                isSelected && styles.dayDotSelected
+              ]}
+            >
+              <Text style={[styles.dayDotText, isRest && styles.dayDotTextRest, isSelected && {color:'#fff'}]}>{d.charAt(0)}</Text>
+            </TouchableOpacity>
           );
         })}
       </View>
+
+      {/* Detail for selected day (BUG 3 & MEJORA 1) */}
+      {viewRoutineData?.id === item.id && selectedDay && (
+        <View style={styles.dayDetailBox}>
+          <Text style={styles.dayDetailTitle}>Ejercicios del {selectedDay}:</Text>
+          {item.dias_semana[selectedDay]?.tipo === 'descanso' ? (
+            <Text style={styles.restDayTextCat}>Día de descanso 🐾</Text>
+          ) : (
+            item.dias_semana[selectedDay]?.ejercicios.map((ex, i) => {
+              const dbEx = ejerciciosData.find(e => e.id === ex.ejercicioId);
+              return (
+                <View key={i} style={styles.dayDetailRow}>
+                  <View style={styles.dayDetailGifBox}>
+                    {dbEx && <ExerciseGif exerciseDbId={dbEx.exerciseDbId} nombre={dbEx.nombre} />}
+                  </View>
+                  <View style={{flex: 1}}>
+                    <Text style={styles.dayDetailExName}>{dbEx?.nombre}</Text>
+                    <Text style={styles.dayDetailExSets}>{ex.sets} sets x {ex.reps} reps</Text>
+                  </View>
+                </View>
+              );
+            })
+          )}
+        </View>
+      )}
 
       <TouchableOpacity style={styles.usePlanBtn} onPress={() => setAsActivePlan(item)}>
         <Text style={styles.usePlanText}>Usar este plan</Text>
@@ -307,6 +393,7 @@ export default function EntrenarScreen() {
     </Card>
   );
 
+  // --- RENDERS MAIN ---
   if (activeWorkoutData) {
     return (
       <View style={styles.activeContainer}>
@@ -336,7 +423,13 @@ export default function EntrenarScreen() {
         <ScrollView style={styles.exercisesScroll} showsVerticalScrollIndicator={false}>
           {activeWorkoutData.ejercicios.map((exercise, eIndex) => (
             <View key={exercise.id} style={styles.exerciseBlock}>
-              <Text style={styles.exerciseName}>{exercise.nombre}</Text>
+              
+              <View style={styles.activeExHeader}>
+                <View style={styles.activeGifBox}>
+                  <ExerciseGif exerciseDbId={exercise.exerciseDbId} nombre={exercise.nombre} />
+                </View>
+                <Text style={styles.exerciseName}>{exercise.nombre}</Text>
+              </View>
               
               <View style={styles.setHeaderRow}>
                 <Text style={[styles.setCol, styles.colSet]}>Set</Text>
@@ -466,7 +559,17 @@ export default function EntrenarScreen() {
                 ) : (
                   newRoutineDays[day].ejercicios.map((ex, idx) => {
                     const dbEx = ejerciciosData.find(e => e.id === ex.ejercicioId);
-                    return <Text key={idx} style={styles.dayExText}>• {dbEx?.nombre}</Text>;
+                    return (
+                      <View key={idx} style={styles.creatorRow}>
+                        <View style={styles.creatorGifBox}>
+                          {dbEx && <ExerciseGif exerciseDbId={dbEx.exerciseDbId} nombre={dbEx.nombre} />}
+                        </View>
+                        <Text style={styles.creatorExText}>{dbEx?.nombre}</Text>
+                        <TouchableOpacity onPress={() => handleDeleteExercise(day, idx)}>
+                          <Trash2 color="#FF4500" size={20} />
+                        </TouchableOpacity>
+                      </View>
+                    );
                   })
                 )}
               </View>
@@ -479,24 +582,35 @@ export default function EntrenarScreen() {
         </View>
       </Modal>
 
-      {/* EXERCISE PICKER MODAL */}
-      <Modal visible={showPicker} transparent animationType="fade">
+      {/* EXERCISE PICKER MODAL - SECTIONLIST */}
+      <Modal visible={showPicker} transparent animationType="slide">
         <View style={styles.pickerOverlay}>
           <View style={styles.pickerContent}>
-            <Text style={{color:'#fff', fontSize: 18, fontWeight:'bold', marginBottom:16}}>Agregar al {pickerDay}</Text>
-            <FlatList 
-              data={ejerciciosData}
+            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom:16}}>
+              <Text style={{color:'#fff', fontSize: 18, fontWeight:'bold'}}>Agregar al {pickerDay}</Text>
+              <TouchableOpacity onPress={()=>setShowPicker(false)}>
+                <X color="#E0E0E0" size={24} />
+              </TouchableOpacity>
+            </View>
+            
+            <SectionList 
+              sections={groupedExercises}
               keyExtractor={item => item.id}
+              renderSectionHeader={({section: {title}}) => (
+                <View style={{backgroundColor:'#8A2BE2', paddingVertical:6, paddingHorizontal:12, borderRadius:4, marginTop:10, marginBottom:4}}>
+                  <Text style={{color:'#fff', fontWeight:'bold', fontSize:12, textTransform:'uppercase'}}>{title}</Text>
+                </View>
+              )}
               renderItem={({item}) => (
-                <TouchableOpacity style={{paddingVertical:12, borderBottomWidth:1, borderColor:'#2A2A3A'}} onPress={()=>handleAddExerciseToDay(item)}>
+                <TouchableOpacity style={{paddingVertical:12, borderBottomWidth:1, borderColor:'#2A2A3A', flexDirection:'row', alignItems:'center'}} onPress={()=>handleAddExerciseToDay(item)}>
+                  <View style={{backgroundColor:'rgba(138,43,226,0.1)', width:40, height:40, borderRadius:8, justifyContent:'center', alignItems:'center', marginRight:12}}>
+                    <Dumbbell color="#8A2BE2" size={20} />
+                  </View>
                   <Text style={{color:'#E0E0E0', fontSize:16}}>{item.nombre}</Text>
-                  <Text style={{color:'#A0A0B0', fontSize:12}}>{item.musculo}</Text>
                 </TouchableOpacity>
               )}
+              stickySectionHeadersEnabled={false}
             />
-            <TouchableOpacity style={{marginTop:16, padding:12, alignItems:'center', backgroundColor:'#2A2A3A', borderRadius:8}} onPress={()=>setShowPicker(false)}>
-              <Text style={{color:'#fff'}}>Cerrar</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -534,8 +648,17 @@ const styles = StyleSheet.create({
   weekPreview: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, backgroundColor: '#0B0B0E', padding: 8, borderRadius: 8 },
   dayDot: { width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(0,255,127,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00FF7F' },
   dayDotRest: { backgroundColor: 'transparent', borderColor: '#FF4500' },
+  dayDotSelected: { backgroundColor: '#8A2BE2', borderColor: '#8A2BE2' },
   dayDotText: { color: '#00FF7F', fontWeight: 'bold', fontSize: 12 },
   dayDotTextRest: { color: '#FF4500' },
+
+  dayDetailBox: { backgroundColor: '#16161E', padding: 12, borderRadius: 8, marginBottom: 16, borderWidth: 1, borderColor: '#2A2A3A' },
+  dayDetailTitle: { color: '#E0E0E0', fontWeight: 'bold', marginBottom: 8 },
+  restDayTextCat: { color: '#FF4500', fontStyle: 'italic', textAlign: 'center', marginVertical: 8 },
+  dayDetailRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, backgroundColor: '#0B0B0E', padding: 8, borderRadius: 8 },
+  dayDetailGifBox: { width: 40, height: 40, borderRadius: 8, overflow: 'hidden', marginRight: 12, backgroundColor: '#16161E' },
+  dayDetailExName: { color: '#D1A3FF', fontSize: 14, fontWeight: 'bold' },
+  dayDetailExSets: { color: '#A0A0B0', fontSize: 12 },
 
   usePlanBtn: { backgroundColor: '#8A2BE2', padding: 12, borderRadius: 8, alignItems: 'center' },
   usePlanText: { color: '#fff', fontWeight: 'bold' },
@@ -553,12 +676,14 @@ const styles = StyleSheet.create({
   dayHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   dayTitle: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   restDayText: { color: '#FF4500', fontSize: 14, fontStyle: 'italic' },
-  dayExText: { color: '#A0A0B0', fontSize: 14, marginTop: 4 },
+  creatorRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0B0E', padding: 8, borderRadius: 8, marginTop: 4 },
+  creatorGifBox: { width: 36, height: 36, borderRadius: 6, overflow: 'hidden', marginRight: 12, backgroundColor: '#16161E' },
+  creatorExText: { color: '#A0A0B0', fontSize: 14, flex: 1 },
   saveCreatorBtn: { backgroundColor: '#00FF7F', margin: 20, padding: 16, borderRadius: 12, alignItems: 'center' },
   saveCreatorText: { color: '#16161E', fontSize: 18, fontWeight: 'bold' },
 
-  pickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', padding: 20 },
-  pickerContent: { backgroundColor: '#16161E', height: '80%', borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#8A2BE2' },
+  pickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },
+  pickerContent: { backgroundColor: '#16161E', height: '90%', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 20, borderWidth: 1, borderColor: '#8A2BE2' },
 
   // Active Training (Re-used styles)
   activeContainer: { flex: 1, backgroundColor: '#0B0B0E' },
@@ -573,7 +698,9 @@ const styles = StyleSheet.create({
   skipRestText: { color: '#E0E0E0', textDecorationLine: 'underline' },
   exercisesScroll: { flex: 1, padding: 20 },
   exerciseBlock: { backgroundColor: '#16161E', borderRadius: 16, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#2A2A3A' },
-  exerciseName: { color: '#D1A3FF', fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
+  activeExHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  activeGifBox: { width: 50, height: 50, borderRadius: 8, overflow: 'hidden', marginRight: 16, backgroundColor: '#0B0B0E' },
+  exerciseName: { color: '#D1A3FF', fontSize: 18, fontWeight: 'bold', flex: 1 },
   setHeaderRow: { flexDirection: 'row', marginBottom: 8, paddingHorizontal: 8 },
   setCol: { color: '#A0A0B0', fontSize: 14, fontWeight: '600' },
   colSet: { width: 40, textAlign: 'center' },
@@ -595,5 +722,8 @@ const styles = StyleSheet.create({
   statValue: { color: '#fff', fontSize: 24, fontWeight: 'bold', marginBottom: 4 },
   statLabel: { color: '#A0A0B0', fontSize: 12, textTransform: 'uppercase' },
   doneBtn: { backgroundColor: '#8A2BE2', paddingVertical: 16, paddingHorizontal: 32, borderRadius: 16, width: '100%', alignItems: 'center' },
-  doneBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
+  doneBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  
+  gifPlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  gifImage: { width: '100%', height: '100%' }
 });

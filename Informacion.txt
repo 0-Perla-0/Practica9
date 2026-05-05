@@ -146,3 +146,67 @@ Cuando el usuario presiona "Guardar Rutina" en el creador, un analizador (loop) 
 - **Cero días de descanso**: Si el contador de días en blanco es 0, lanza advertencia crítica de que el músculo no crecerá sin descanso.
 - **Días Seguidos**: Un contador de racha cuenta días de fuerza consecutivos. Si el contador llega a >= 4, sugiere añadir descanso en el 4to día.
 - **Interferencia de Piernas**: Si el Día(i) tiene un ejercicio cuyo `musculo` contiene "Piernas" o "Glúteos", guarda un flag `hasLegsPrev = true`. Si al Día(i+1) detecta lo mismo, dispara advertencia de interferencia de recuperación del tren inferior para evitar lesiones o fatiga central.
+
+---
+
+PROMPT 2 AÑADIDO:
+Hay varios bugs y mejoras que implementar. Acepta todos los cambios sin pedir 
+confirmación por cada archivo.
+
+BUG 1: API EXERCISEDB 
+La API key ya está activa y funcionando (200 OK confirmado en RapidAPI).
+El problema puede ser que los exerciseDbId en ejercicios.js no son IDs válidos.
+Haz lo siguiente:
+- En exerciseService.js, cuando falle fetchExerciseGif por ID, haz fallback 
+  automático a searchExerciseByName usando el nombre del ejercicio en inglés
+- Traduce el nombre al inglés antes de buscar (ej: "Press de Banca" → "bench press",
+  "Sentadilla" → "squat", "Dominadas" → "pull up", etc.)
+- Si aun así falla, muestra el placeholder pero también loguea la respuesta 
+  completa de la API para poder debuggear
+- Agrega un mapa de traducción nombre_español → nombre_inglés en exerciseService.js
+
+ BUG 2: NAVEGACIÓN - ÍCONOS DEL TAB BAR 
+Cuando te sitúas sobre cualquier tab (Dashboard, Entrenar, Historial, Ejercicios, 
+Progreso) aparece el ícono de pies del Dashboard en todos.
+Corrección: En BottomTabNavigator.js cada tab debe tener su propio ícono 
+definido en tabBarIcon. Cuando el tab está activo (focused=true) simplemente 
+cambia el color del ícono a #8A2BE2. Cuando está inactivo, color #A0A0B0.
+NO cambies el ícono, solo el color. Cada tab conserva su ícono único.
+
+ BUG 3: RUTINAS - AL PICAR UN DÍA NO SE VE NADA 
+Cuando el usuario toca un día de la semana (ej: Martes) en su rutina debe 
+mostrarse la lista de ejercicios asignados a ese día.
+- Implementa un estado selectedDay que al tocar un día muestre sus ejercicios
+- Si el día no tiene ejercicios asignados mostrar: "Día de descanso 🐾"
+- Si tiene ejercicios mostrarlos en cards con nombre, sets, reps y el GIF animado
+
+-MEJORA 1: VER GIF EN MODO ENTRENAMIENTO 
+Siempre que se muestre un ejercicio (en rutinas creadas, rutinas predefinidas, 
+modo entrenamiento activo) debe aparecer el GIF animado de la persona haciéndolo,
+igual que en el modal de la biblioteca de ejercicios. Nunca mostrar solo el nombre.
+
+-MEJORA 2: ELIMINAR EJERCICIO DE RUTINA 
+En el modo de creación/edición de rutina, cada ejercicio agregado debe tener 
+un botón de eliminar (ícono X o basura en color rojo) para quitarlo de la rutina.
+
+ MEJORA 3: SEPARACIÓN POR GRUPOS EN BIBLIOTECA DE EJERCICIOS 
+En EjerciciosScreen.js organiza los ejercicios así:
+- Primera capa de filtros (chips horizontales): grupo muscular 
+  (Todos, Pecho, Espalda, Hombros, Bíceps, Tríceps, Core, Piernas, Glúteos, Cardio)
+- Segunda capa de filtros: Categoría (Fuerza, Cardio, HIIT, Movilidad)
+- Tercera capa: Dificultad (Todos, Principiante, Intermedio, Avanzado)
+- Los chips activos se resaltan en #8A2BE2, inactivos en #2A2A3A
+
+-MEJORA 4: SEPARACIÓN EN SELECTOR DE EJERCICIOS PARA NUEVA RUTINA 
+Cuando el usuario va a agregar ejercicios a su rutina personalizada, 
+el selector debe mostrar los ejercicios organizados:
+- Primero agrupados por Dificultad (sección Principiante, Intermedio, Avanzado)
+- Dentro de cada sección, separados por Categoría (Fuerza, Cardio, HIIT, Movilidad)
+- Dentro de cada categoría, agrupados por grupo muscular
+- Usar SectionList para renderizar estas secciones con headers estilizados en #8A2BE2
+
+Al terminar haz commit con el mensaje "fix: bugs navegación, API GIFs, rutinas y 
+mejoras de organización" y push a main. Luego actualiza Informacion.txt con 
+todos los cambios realizados.                   Y al terminar actualiza Informacion.txt agregando este prompt completo 
+tal cual está escrito, sin omitir nada, debajo de los prompts anteriores 
+que ya están guardados ahí.

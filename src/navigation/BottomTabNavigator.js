@@ -35,13 +35,11 @@ const BottomTabNavigator = () => {
           // y los otros iconos para el resto, para mostrar variedad. O podemos usarlo
           // cuando está enfocado.
           
-          if (route.name === 'Dashboard') {
-             // Usamos el icono de gato siempre para el Dashboard
-             return <CatIcon color={color} size={size} focused={focused} />;
-          }
-
           let IconComponent;
           switch (route.name) {
+            case 'Dashboard':
+              IconComponent = CatIcon;
+              break;
             case 'Entrenar':
               IconComponent = Dumbbell;
               break;
@@ -58,14 +56,7 @@ const BottomTabNavigator = () => {
               IconComponent = Home;
           }
 
-          // Si está enfocado, quizás mostrar el CatIcon para reforzar identidad en lugar del icono normal?
-          // El requerimiento dice: "Usa este icono como el indicador de selección en la barra de navegación."
-          // Entonces, si está enfocado, mostramos la huellita de gato, si no, el icono normal.
-          if (focused) {
-             return <CatIcon color="#8A2BE2" size={size} focused={true} />;
-          }
-
-          return <IconComponent color={color} size={size} />;
+          return <IconComponent color={focused ? "#8A2BE2" : "#A0A0B0"} size={size} />;
         },
       })}
     >
