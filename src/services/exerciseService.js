@@ -6,14 +6,16 @@ const BASE_URL = 'https://exercisedb.p.rapidapi.com/exercises';
 
 const gifCache = {};
 
-export const fetchExerciseGif = async (exerciseDbId) => {
-  if (!exerciseDbId) throw new Error('ID de ejercicio requerido');
+export const fetchExerciseGif = async (exerciseDbId, exerciseName = null) => {
+  if (!exerciseDbId && !exerciseName) throw new Error('ID o Nombre requerido');
   
-  if (gifCache[exerciseDbId]) {
+  if (exerciseDbId && gifCache[exerciseDbId]) {
     return gifCache[exerciseDbId];
   }
 
+  // Intento 1: Fetch por ID exacto
   try {
+    console.log(`[API] Fetching por ID: ${exerciseDbId}`);
     const response = await fetch(`${BASE_URL}/exercise/${exerciseDbId}`, {
       method: 'GET',
       headers: {
@@ -22,22 +24,37 @@ export const fetchExerciseGif = async (exerciseDbId) => {
       }
     });
 
-    if (!response.ok) {
-      throw new Error(`Error en la API: ${response.status}`);
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.gifUrl) {
+        gifCache[exerciseDbId] = data.gifUrl;
+        return data.gifUrl;
+      }
+    } else {
+      console.warn(`[API] Error por ID (${response.status}). Ejecutando fallback...`);
     }
-
-    const data = await response.json();
-    
-    if (data && data.gifUrl) {
-      gifCache[exerciseDbId] = data.gifUrl;
-      return data.gifUrl;
-    }
-    
-    throw new Error('GIF no encontrado en la respuesta');
   } catch (error) {
-    console.error('Error fetching exercise GIF:', error);
-    throw error; // Let the caller handle the fallback
+    console.warn(`[API] Excepción en fetch por ID:`, error);
   }
+
+  // Fallback: Fetch por nombre
+  if (exerciseName) {
+    try {
+      console.log(`[API] Fallback: Buscando por nombre "${exerciseName}"`);
+      const searchData = await searchExerciseByName(exerciseName);
+      if (searchData && searchData.length > 0) {
+        const gifUrl = searchData[0].gifUrl;
+        if (gifUrl) {
+          if (exerciseDbId) gifCache[exerciseDbId] = gifUrl; // Guardar bajo el ID solicitado
+          return gifUrl;
+        }
+      }
+    } catch (fallbackError) {
+      console.error(`[API] Fallback fallido:`, fallbackError);
+    }
+  }
+
+  throw new Error('GIF no encontrado en la API (ID y Fallback fallidos)');
 };
 
 export const searchExerciseByName = async (name) => {
@@ -53,7 +70,7 @@ export const searchExerciseByName = async (name) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Error en la API: ${response.status}`);
+      throw new Error(`Error en búsqueda por nombre: ${response.status}`);
     }
 
     return await response.json();

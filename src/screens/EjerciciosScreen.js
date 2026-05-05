@@ -48,7 +48,7 @@ const EjerciciosScreen = () => {
     if (ejercicio.exerciseDbId) {
       setLoadingGif(true);
       try {
-        const url = await fetchExerciseGif(ejercicio.exerciseDbId);
+        const url = await fetchExerciseGif(ejercicio.exerciseDbId, ejercicio.nombre);
         setGifUrl(url);
       } catch (error) {
         setGifError(true);

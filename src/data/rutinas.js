@@ -1,84 +1,66 @@
 export const rutinasData = [
   {
-    id: '1',
-    nombre: 'Push (Pecho, Hombros, Tríceps)',
-    descripcion: 'Enfocada en todos los movimientos de empuje para desarrollar la parte frontal del tren superior.',
+    id: 'plan_a',
+    nombre: 'Plan A: Fuerza 3 Días (PPL Básico)',
+    descripcion: 'Rutina clásica Push/Pull/Legs.',
+    descripcion_cientifica: 'Permite recuperar grupos musculares por 72h entre sesiones. Ideal para ganancias constantes de fuerza.',
     nivel: 'Intermedio',
-    duracion_estimada: 60, // minutos
-    ejercicios: [
-      { ejercicioId: '1',  sets: 4, reps: '8-10' }, // Press de Banca
-      { ejercicioId: '3',  sets: 3, reps: '10-12' }, // Press Inclinado
-      { ejercicioId: '21', sets: 4, reps: '8-10' }, // Press Militar
-      { idCustom: 'e4', ejercicioId: '22', sets: 4, reps: '12-15' }, // Elevaciones Laterales
-      { idCustom: 'e5', ejercicioId: '28', sets: 4, reps: '12-15' }, // Extensión Tríceps
-    ]
+    dias_semana: {
+      Lunes: { tipo: 'entrenamiento', nombre_dia: 'Push', ejercicios: [{ ejercicioId: '1', sets: 4, reps: '8-10' }, { ejercicioId: '21', sets: 4, reps: '8-10' }, { ejercicioId: '6', sets: 3, reps: '8-12' }] },
+      Martes: { tipo: 'descanso' },
+      Miercoles: { tipo: 'entrenamiento', nombre_dia: 'Pull', ejercicios: [{ ejercicioId: '11', sets: 3, reps: 'Al fallo' }, { ejercicioId: '13', sets: 3, reps: '10-12' }, { ejercicioId: '25', sets: 3, reps: '10-12' }] },
+      Jueves: { tipo: 'descanso' },
+      Viernes: { tipo: 'entrenamiento', nombre_dia: 'Legs', ejercicios: [{ ejercicioId: '31', sets: 4, reps: '6-10' }, { ejercicioId: '37', sets: 4, reps: '8-12' }, { ejercicioId: '33', sets: 3, reps: '10-12' }] },
+      Sabado: { tipo: 'descanso' },
+      Domingo: { tipo: 'descanso' }
+    }
   },
   {
-    id: '2',
-    nombre: 'Pull (Espalda, Bíceps)',
-    descripcion: 'Trabaja toda la musculatura de tracción. Excelente para amplitud de espalda y bíceps.',
-    nivel: 'Intermedio',
-    duracion_estimada: 55,
-    ejercicios: [
-      { ejercicioId: '12', sets: 4, reps: '5-8' }, // Peso Muerto
-      { ejercicioId: '11', sets: 3, reps: 'Al fallo' }, // Dominadas
-      { ejercicioId: '14', sets: 4, reps: '8-10' }, // Remo con Barra
-      { ejercicioId: '18', sets: 3, reps: '15-20' }, // Face Pull
-      { ejercicioId: '25', sets: 3, reps: '10-12' }, // Curl de Bíceps
-    ]
-  },
-  {
-    id: '3',
-    nombre: 'Legs (Piernas y Glúteos)',
-    descripcion: 'Rutina brutal para hipertrofia y fuerza en el tren inferior.',
+    id: 'plan_b',
+    nombre: 'Plan B: Hipertrofia 4 Días (Upper/Lower)',
+    descripcion: 'División torso/pierna para volumen.',
+    descripcion_cientifica: 'La frecuencia 2x por grupo muscular maximiza la síntesis de proteínas y la hipertrofia muscular progresiva.',
     nivel: 'Avanzado',
-    duracion_estimada: 65,
-    ejercicios: [
-      { ejercicioId: '31', sets: 4, reps: '6-10' }, // Sentadilla
-      { ejercicioId: '32', sets: 4, reps: '10-15' }, // Prensa
-      { ejercicioId: '37', sets: 4, reps: '8-12' }, // Peso Muerto Rumano
-      { ejercicioId: '35', sets: 3, reps: '12-15' }, // Extensiones
-      { ejercicioId: '36', sets: 3, reps: '10-15' }, // Curl Femoral
-    ]
+    dias_semana: {
+      Lunes: { tipo: 'entrenamiento', nombre_dia: 'Upper A', ejercicios: [{ ejercicioId: '1', sets: 4, reps: '6-8' }, { ejercicioId: '14', sets: 4, reps: '8-10' }, { ejercicioId: '21', sets: 3, reps: '8-10' }] },
+      Martes: { tipo: 'entrenamiento', nombre_dia: 'Lower A', ejercicios: [{ ejercicioId: '31', sets: 4, reps: '6-8' }, { ejercicioId: '37', sets: 4, reps: '8-10' }] },
+      Miercoles: { tipo: 'descanso' },
+      Jueves: { tipo: 'entrenamiento', nombre_dia: 'Upper B', ejercicios: [{ ejercicioId: '3', sets: 4, reps: '10-12' }, { ejercicioId: '13', sets: 4, reps: '10-12' }, { ejercicioId: '22', sets: 4, reps: '12-15' }] },
+      Viernes: { tipo: 'entrenamiento', nombre_dia: 'Lower B', ejercicios: [{ ejercicioId: '32', sets: 4, reps: '10-15' }, { ejercicioId: '38', sets: 4, reps: '10-12' }, { ejercicioId: '35', sets: 3, reps: '15' }] },
+      Sabado: { tipo: 'descanso' },
+      Domingo: { tipo: 'descanso' }
+    }
   },
   {
-    id: '4',
-    nombre: 'Full Body Felino',
-    descripcion: 'Rutina de cuerpo completo ideal para entrenar 3 veces por semana.',
+    id: 'plan_c',
+    nombre: 'Plan C: Full Body 3 Días',
+    descripcion: 'Entrenamiento de cuerpo completo.',
+    descripcion_cientifica: 'Altamente eficiente para principiantes e intermedios. Estimula el cuerpo completo produciendo una gran respuesta anabólica.',
     nivel: 'Principiante',
-    duracion_estimada: 50,
-    ejercicios: [
-      { ejercicioId: '1', sets: 3, reps: '8-10' }, // Press Banca
-      { ejercicioId: '13', sets: 3, reps: '10-12' }, // Jalón al pecho
-      { ejercicioId: '31', sets: 3, reps: '8-10' }, // Sentadilla
-      { ejercicioId: '21', sets: 3, reps: '10-12' }, // Press Militar
-      { ejercicioId: '41', sets: 3, reps: '60s' }, // Plancha
-    ]
+    dias_semana: {
+      Lunes: { tipo: 'entrenamiento', nombre_dia: 'Full Body 1', ejercicios: [{ ejercicioId: '31', sets: 3, reps: '8-10' }, { ejercicioId: '1', sets: 3, reps: '8-10' }, { ejercicioId: '14', sets: 3, reps: '8-10' }] },
+      Martes: { tipo: 'descanso' },
+      Miercoles: { tipo: 'entrenamiento', nombre_dia: 'Full Body 2', ejercicios: [{ ejercicioId: '12', sets: 3, reps: '5-8' }, { ejercicioId: '21', sets: 3, reps: '8-10' }, { ejercicioId: '11', sets: 3, reps: 'Al fallo' }] },
+      Jueves: { tipo: 'descanso' },
+      Viernes: { tipo: 'entrenamiento', nombre_dia: 'Full Body 3', ejercicios: [{ ejercicioId: '32', sets: 3, reps: '10-15' }, { ejercicioId: '3', sets: 3, reps: '10-12' }, { ejercicioId: '16', sets: 3, reps: '12-15' }] },
+      Sabado: { tipo: 'descanso' },
+      Domingo: { tipo: 'descanso' }
+    }
   },
   {
-    id: '5',
-    nombre: 'HIIT y Core',
-    descripcion: 'Quema grasa, mejora tu resistencia cardiovascular y endurece el abdomen.',
+    id: 'plan_d',
+    nombre: 'Plan D: HIIT + Fuerza 5 Días',
+    descripcion: 'Condicionamiento físico extremo.',
+    descripcion_cientifica: 'Combina entrenamiento de resistencia para preservar masa magra con HIIT para maximizar la oxidación de grasas pos-ejercicio (EPOC).',
     nivel: 'Avanzado',
-    duracion_estimada: 30,
-    ejercicios: [
-      { ejercicioId: '46', sets: 4, reps: '15' }, // Burpees
-      { ejercicioId: '47', sets: 4, reps: '40s' }, // Mountain Climbers
-      { ejercicioId: '44', sets: 3, reps: '8-12' }, // Rueda Abdominal
-      { ejercicioId: '45', sets: 3, reps: '20' }, // Twist Ruso
-      { ejercicioId: '48', sets: 3, reps: '60s' }, // Jumping Jacks
-    ]
-  },
-  {
-    id: '6',
-    nombre: 'Movilidad Activa',
-    descripcion: 'Perfecta para días de descanso activo o calentamiento profundo.',
-    nivel: 'Principiante',
-    duracion_estimada: 15,
-    ejercicios: [
-      { ejercicioId: '49', sets: 2, reps: '10-12' }, // Gato-Vaca
-      { ejercicioId: '50', sets: 2, reps: '8/lado' }, // Rotación Torácica
-      { ejercicioId: '41', sets: 2, reps: '45s' }, // Plancha
-    ]
+    dias_semana: {
+      Lunes: { tipo: 'entrenamiento', nombre_dia: 'Fuerza Upper', ejercicios: [{ ejercicioId: '1', sets: 4, reps: '8-10' }, { ejercicioId: '11', sets: 4, reps: 'Al fallo' }] },
+      Martes: { tipo: 'entrenamiento', nombre_dia: 'HIIT Cardio', ejercicios: [{ ejercicioId: '46', sets: 5, reps: '15' }, { ejercicioId: '47', sets: 5, reps: '40s' }] },
+      Miercoles: { tipo: 'entrenamiento', nombre_dia: 'Fuerza Lower', ejercicios: [{ ejercicioId: '31', sets: 4, reps: '6-10' }, { ejercicioId: '38', sets: 4, reps: '10-12' }] },
+      Jueves: { tipo: 'entrenamiento', nombre_dia: 'HIIT Cardio', ejercicios: [{ ejercicioId: '48', sets: 5, reps: '60s' }, { ejercicioId: '44', sets: 4, reps: '10-12' }] },
+      Viernes: { tipo: 'entrenamiento', nombre_dia: 'Full Body', ejercicios: [{ ejercicioId: '14', sets: 3, reps: '10-12' }, { ejercicioId: '34', sets: 3, reps: '10-12' }, { ejercicioId: '2', sets: 3, reps: 'Al fallo' }] },
+      Sabado: { tipo: 'descanso' },
+      Domingo: { tipo: 'descanso' }
+    }
   }
 ];

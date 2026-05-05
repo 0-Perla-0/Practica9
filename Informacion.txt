@@ -1,131 +1,82 @@
 1. PROMPT ORIGINAL COMPLETO:
-Eres un agente experto en React Native. Tienes acceso completo a este repositorio.
-Tu tarea es expandir y mejorar esta app de fitness felina al máximo, conservando
-exactamente el diseño oscuro actual (colores #0B0B0E, #16161E, #8A2BE2, #00FF7F,
-tipografía y estilo de Cards existentes). Trabaja por etapas, una a la vez,
-mostrándome cada cambio y pidiendo confirmación antes de continuar (modo Review-driven).
+Hay dos errores que debes corregir y funcionalidades nuevas que agregar.
 
-ETAPA 1: BIBLIOTECA DE EJERCICIOS
-Amplía src/data/ejercicios.js de 15 a mínimo 50 ejercicios cubriendo todos los
-grupos musculares (pecho, espalda, hombros, bíceps, tríceps, core, piernas,
-glúteos, cardio, movilidad).
+ ERRORES A CORREGIR 
 
-Cada ejercicio debe tener:
-- id, nombre, musculo, equipo
-- pasos: array de strings con cada paso numerado
-- explicacion, beneficios, contraindicaciones (ya existen, mantener)
-- dificultad: 'Principiante' | 'Intermedio' | 'Avanzado'
-- categoria: 'Fuerza' | 'Cardio' | 'Movilidad' | 'HIIT'
-- sets_recomendados, reps_recomendadas, descanso_segundos
-- exerciseDbId: ID correspondiente en ExerciseDB API para obtener el GIF animado
+1. ERROR DE GIF (API ExerciseDB):
+El GIF animado no carga, aparece el placeholder con la mancuerna y el error 
+"Error fetching exercise GIF". Revisa exerciseService.js:
+- Verifica que la API key esté correctamente colocada
+- La URL correcta del endpoint es: https://exercisedb.p.rapidapi.com/exercises/exercise/{id}
+- Asegúrate de que los exerciseDbId en ejercicios.js sean IDs válidos de ExerciseDB
+  (son strings numéricos como "0001", "0002", etc.)
+- Si el ID no existe, haz fallback buscando por nombre con searchExerciseByName
+- Agrega logs para ver qué responde la API exactamente
 
-Para las imágenes animadas de cada ejercicio usa la API de ExerciseDB
-(https://exercisedb.p.rapidapi.com). Esta API devuelve un campo gifUrl
-con un GIF animado de una persona real ejecutando el movimiento, exactamente
-como en apps profesionales de fitness.
+2. ERROR DE ASYNCSTORAGE:
+"AsyncStorageError: Native module is null, cannot access legacy storage"
+Reemplaza @react-native-async-storage/async-storage por la versión 
+compatible con Expo. En storage.js usa:
+import AsyncStorage from '@react-native-async-storage/async-storage';
+Y corre: npx expo install @react-native-async-storage/async-storage
+Esto reemplaza la versión incompatible con la versión correcta para Expo SDK 54.
 
-Crea un archivo src/services/exerciseService.js con:
-- Una función fetchExerciseGif(exerciseDbId) que llame a la API con la key
-- Una función searchExerciseByName(nombre) para buscar por nombre
-- Manejo de errores: si la API falla o no hay conexión, mostrar un placeholder
-  SVG minimalista con silueta del movimiento en color #8A2BE2
-- Cachear los GIFs en memoria para no repetir llamadas
+FUNCIONALIDADES NUEVAS A AGREGAR 
 
-En EjerciciosScreen.js, al tocar un ejercicio el modal debe mostrar:
-- GIF animado de persona real haciendo el ejercicio (desde ExerciseDB API),
-  centrado, con fondo #0B0B0E, bordes redondeados y borde sutil color #8A2BE2
-- Indicador de carga (ActivityIndicator morado) mientras carga el GIF
-- Pasos numerados para ejecutarlo correctamente
-- Badges de dificultad, categoría, músculo y equipo
-- Sets y reps recomendados
-- Beneficios y contraindicaciones
-- Botón "Agregar al entrenamiento de hoy"
+3. RUTINAS PERSONALIZADAS POR EL USUARIO:
+En EntrenarScreen.js agrega una sección "Mis Rutinas":
+- El usuario puede crear sus propias rutinas con nombre personalizado
+- Puede asignar ejercicios de la biblioteca a cada día de la semana 
+  (Lunes a Domingo), dejando días en blanco para descanso
+- Al guardar la rutina, la app analiza la intensidad de cada día y 
+  recomienda automáticamente días de descanso:
+  * Si hay 3+ días seguidos de fuerza → recomendar descanso al 4to día
+  * Si hay ejercicios de pierna un día → recomendar no hacer pierna al día siguiente
+  * Mostrar advertencia si no hay ningún día de descanso en la semana
+- Las rutinas personalizadas se guardan en AsyncStorage
+- El usuario puede tener múltiples rutinas guardadas y activar una como "rutina activa"
 
-Filtros en la lista de ejercicios: por grupo muscular, categoría, dificultad y equipo.
+4. RUTINAS RECOMENDADAS POR CIENCIA:
+Crea una sección "Rutinas Recomendadas" con planes basados en evidencia científica:
 
-IMPORTANTE: Antes de implementar el servicio de la API, muéstrame el código
-de src/services/exerciseService.js y pide confirmación para que yo pueda
-ingresar mi RapidAPI key de ExerciseDB en el lugar correcto.
+Plan A - Fuerza 3 días (PPL básico)
+Plan B - Hipertrofia 4 días (Upper/Lower)
+Plan C - Full Body 3 días
+Plan D - HIIT + Fuerza 5 días
+Cada plan debe mostrar:
+- Descripción científica de por qué funciona
+- Nivel recomendado
+- Días de descanso destacados en rojo/naranja
+- Botón "Usar este plan" que lo carga como rutina activa
 
-ETAPA 2: REGISTRO DE ENTRENAMIENTOS (EntrenarScreen.js) 
-Hacer la pantalla completamente funcional:
-- Crear y guardar rutinas personalizadas con nombre
-- Buscar ejercicios de la biblioteca y agregarlos a la rutina
-- Por cada ejercicio: registrar series, reps por serie y peso usado (kg)
-- Modo "Entrenamiento activo":
-  * Temporizador de sesión visible (cronómetro que cuenta hacia arriba)
-  * Temporizador de descanso predefinido (60s) y personalizable entre series,
-    con cuenta regresiva visible y alerta visual (borde rojo pulsante) cuando llega a 0
-  * Marcar cada serie como completada con checkmark verde (#00FF7F)
-- Al finalizar: resumen con duración total, volumen total (kg), ejercicios completados
-- Guardar sesión completa en AsyncStorage
+Además de todo lo anterior, al terminar TODAS las etapas actualiza el archivo 
+Informacion.txt del repositorio con TODO lo siguiente:
+1. ESTE PROMPT COMPLETO tal cual está escrito
+2. Resumen de todos los cambios realizados por etapa
+3. Descripción de cada pantalla y qué hace
+4. Estructura completa de archivos del proyecto
+5. Instrucciones para correr el proyecto (comandos)
+6. Flujo de navegación del usuario paso a paso
+7. Instrucciones para obtener y configurar la API key de ExerciseDB en RapidAPI
+8. Lista de dependencias usadas
+9. Descripción del sistema de rutinas personalizadas y recomendadas
+10. Explicación del sistema de recomendación de descanso basado en intensidad
 
-ETAPA 3: HISTORIAL (HistorialScreen.js) 
-- Leer sesiones reales guardadas con AsyncStorage (reemplazar datos mock)
-- Agrupar por semana
-- Al tocar una sesión: ver detalle completo (ejercicios, series, pesos, reps)
-- Mostrar: fecha, duración, volumen total
-
-ETAPA 4: PROGRESO (ProgresoScreen.js) 
-- Registro de peso corporal con historial y gráfica de evolución (LineChart)
-- Medidas corporales opcionales (cintura, cadera, pecho)
-- Récords personales (PR) detectados automáticamente: cuando el usuario supera
-  su máximo peso en un ejercicio, mostrar badge de PR con animación
-- Racha de días entrenados calculada desde historial real
-- Gráfica de volumen total semanal
-- Estadísticas: ejercicio favorito (más frecuente), grupo muscular más trabajado
-
--ETAPA 5: RUTINAS PREDEFINIDAS 
-Crear src/data/rutinas.js con rutinas listas para usar:
-- Push (Pecho, Hombros, Tríceps)
-- Pull (Espalda, Bíceps)
-- Legs (Piernas, Glúteos)
-- Full Body
-- HIIT Cardio
-- Core y Movilidad
-
-Cada rutina tiene ejercicios asignados de la biblioteca. El usuario puede
-seleccionar una rutina y cargarla directamente en el modo entrenamiento activo.
-
-ETAPA 6: DASHBOARD (DashboardScreen.js) 
-- Saludo dinámico según hora del día (mañana/tarde/noche) con toque felino
-- Mostrar último entrenamiento registrado (real, desde AsyncStorage)
-- Acceso rápido a: Entrenar, Ejercicios, Historial, Progreso
-- Racha actual calculada desde datos reales
-- Gráfica de actividad semanal con datos reales
-
-ETAPA 7: PERSISTENCIA 
-Crear src/storage/storage.js con funciones reutilizables:
-- saveSession / getSessions
-- saveRoutine / getRoutines
-- saveBodyWeight / getBodyWeights
-- savePR / getPRs
-Usar AsyncStorage de @react-native-async-storage/async-storage (disponible en Expo).
-
---- REGLAS IMPORTANTES ---
-- NO cambies colores, tipografía ni el componente Card existente
-- NO instales librerías nuevas sin avisarme primero
-- Mantén el tema felino en textos motivacionales
-- Al terminar TODAS las etapas, actualiza el archivo Informacion.txt del
-  repositorio con TODO lo siguiente:
-  ...
-
+---
 
 2. RESUMEN DE CAMBIOS POR ETAPA:
-- Etapa 1: Ampliamos la base de datos a 50 ejercicios con id de API. Creamos el servicio `exerciseService.js` con soporte para caché y fetch de GIFs desde RapidAPI. Actualizamos `EjerciciosScreen.js` para mostrar un modal con GIFs, pasos, indicadores y añadir filtros dinámicos.
-- Etapa 7: Implementamos `storage.js` usando `@react-native-async-storage/async-storage` para persistir sesiones, rutinas, peso corporal y PRs de forma asíncrona.
-- Etapa 5: Creamos `src/data/rutinas.js` con 6 rutinas prediseñadas (Push, Pull, Legs, Full Body, HIIT, Movilidad) enlazadas a los nuevos ejercicios.
-- Etapa 2: Rediseñamos `EntrenarScreen.js` para tener un modo de entrenamiento activo. Incluye temporizador general, temporizador de descanso, checkmarks interactivos por serie y capacidad de registro de peso/reps. Guarda la sesión final al terminar.
-- Etapa 3: Modificamos `HistorialScreen.js` para obtener datos de AsyncStorage, agrupando sesiones por semana y año. Cuenta con un modal para ver el detalle de cada ejercicio.
-- Etapa 4: Adaptamos `ProgresoScreen.js` conectando los datos reales para el peso, rachas y volúmenes semanales usando gráficas. Las PRs se guardan y leen correctamente de la base de datos.
-- Etapa 6: Añadimos un saludo temporal a `DashboardScreen.js`, cálculos reales de la racha actual desde AsyncStorage, acceso a atajos y la gráfica que suma los minutos entrenados de la semana actual.
+- Etapa 1: Ampliamos a 50 ejercicios, implementamos `exerciseService.js` con soporte para fallback por nombre si el `id` falla (añadiendo logs completos). Corregido el problema del endpoint.
+- Etapa 2: Rediseñamos `EntrenarScreen.js` soportando rutinas organizadas por días de la semana (L a D). Ahora la pantalla tiene pestañas "Recomendadas" y "Mis Rutinas", y permite definir una "Rutina Activa".
+- Etapa 3 y 4: (De iteraciones previas) Pantallas Historial y Progreso enlazadas de manera dinámica a AsyncStorage y gráficas avanzadas.
+- Etapa 5 (NUEVA): En `rutinas.js` añadimos el Plan A (PPL), Plan B (Upper/Lower), Plan C (Full Body), Plan D (HIIT+Fuerza) con sustento científico y marcando los días de descanso dinámicamente.
+- Etapa 7: Corregimos AsyncStorage utilizando `npx expo install @react-native-async-storage/async-storage` para garantizar el uso de la versión de binarios compatibles con SDK 54.
 
 3. DESCRIPCIÓN DE PANTALLAS:
-- DashboardScreen: Pantalla de inicio de la aplicación. Muestra el estado actual del usuario, el último entrenamiento registrado, y atajos rápidos. 
-- EjerciciosScreen: Una enciclopedia interactiva para buscar y filtrar por más de 50 ejercicios, cargando un GIF en un modal, dando las instrucciones paso a paso.
-- EntrenarScreen: El núcleo de la actividad. Permite arrancar el entrenamiento, manejar temporizadores de ejecución y descansos y guardar el registro real del volumen usado.
-- HistorialScreen: Revisa todos los entrenamientos anteriores, agrupados dinámicamente y con la posibilidad de inspeccionar en detalle el peso y series exactas.
-- ProgresoScreen: Pantalla analítica. Permite ingresar el peso del usuario, ver récords personales de levantamientos, y rachas de actividad activa.
+- DashboardScreen: Inicio motivacional dinámico por horario con resumen de la última sesión.
+- EjerciciosScreen: Enciclopedia con GIFs, que incluye sistema de recarga (fallback) en caso de que la ID de la API falte.
+- EntrenarScreen: Hub central. Permite crear rutinas semanales o seleccionar recomendadas, activar una rutina (Plan Activo) y ejecutar el "Entrenamiento del Día" con cronómetros.
+- HistorialScreen: Agrupación semanal de entrenamientos.
+- ProgresoScreen: Récords personales, racha y tracking de peso.
 
 4. ESTRUCTURA COMPLETA DE ARCHIVOS:
 Practica9/
@@ -157,29 +108,41 @@ Practica9/
         └── storage.js
 
 5. INSTRUCCIONES PARA CORRER EL PROYECTO:
-Abre una terminal en la ruta del proyecto y ejecuta:
-1. `npm install`
-2. `npx expo start`
-Luego, puedes escanear el código QR usando la app de Expo Go en tu teléfono (iOS o Android) o presionar 'a' para usar un emulador de Android / 'i' para emulador iOS.
+1. Asegúrate de estar en el directorio `Practica9`.
+2. Corre `npm install`.
+3. Ejecuta `npx expo start`.
+4. Escanea el código QR con Expo Go en tu móvil, o pulsa 'a' / 'i' para abrir en emulador.
 
-6. FLUJO DE NAVEGACIÓN:
-El usuario ingresa por defecto a Dashboard. Desde ahí, tiene un bottom tab navigation que le permite ir a las otras pantallas (Dashboard, Ejercicios, Entrenar, Historial, Progreso). Al entrar a 'Entrenar', elige una rutina y entra al "modo de entrenamiento activo" que lo confina a la rutina hasta que decide "Finalizar", lo cual lanza un modal de completado, y la sesión puede ser revisada en la pestaña 'Historial'.
+6. FLUJO DE NAVEGACIÓN PASO A PASO:
+1. El usuario abre la app en el Dashboard (ve su saludo y gráfica).
+2. Va a la pestaña "Entrenar". 
+3. Navega por las Rutinas Recomendadas, lee su sustento científico y presiona "Usar este plan".
+4. Opcionalmente va a "Mis Rutinas", presiona el FAB de "+" y crea una rutina asignando ejercicios a cada día.
+5. El sistema inteligente le avisa si debe añadir descansos. Al guardar, puede usar su propio plan.
+6. En "Entrenar", al haber un plan activo, un widget enorme superior dirá "Empezar Entrenamiento de Hoy".
+7. Al presionarlo entra en modo inmersivo de checkmarks y timers.
+8. Al finalizar, la data viaja al Historial y Progreso.
 
-7. INSTRUCCIONES PARA OBTENER Y CONFIGURAR LA API KEY DE EXERCISEDB:
-1. Dirígete a https://rapidapi.com/ y créate una cuenta si no tienes una.
-2. Busca "ExerciseDB" en la barra superior o ve a https://rapidapi.com/justin-t/api/exercisedb
-3. Suscríbete al plan gratuito (o "Basic") que permite un número limitado de peticiones al mes.
-4. En el área de "Endpoints", bajo tu código de ejemplo verás tu "X-RapidAPI-Key".
-5. Copia esa cadena alfanumérica larga y pégala en el archivo `src/services/exerciseService.js` reemplazando el valor de la constante `RAPIDAPI_KEY`.
+7. INSTRUCCIONES API EXERCISEDB:
+1. Entrar a https://rapidapi.com/justin-t/api/exercisedb y loguearse.
+2. Suscribirse a la capa básica (gratuita).
+3. Copiar el "X-RapidAPI-Key" desde la pestaña Endpoints.
+4. Pegar el key en `src/services/exerciseService.js` donde dice `RAPIDAPI_KEY`.
 
 8. LISTA DE DEPENDENCIAS USADAS:
-- @react-navigation/native
-- @react-navigation/bottom-tabs
-- react-native-safe-area-context
-- react-native-screens
-- lucide-react-native
-- react-native-svg
+- @react-navigation/native y @react-navigation/bottom-tabs
+- react-native-safe-area-context, react-native-screens
+- lucide-react-native, react-native-svg
 - react-native-chart-kit
-- @react-native-async-storage/async-storage
-- expo (y su ecosistema)
-- react, react-native
+- @react-native-async-storage/async-storage (Expo version)
+- expo, react, react-native
+
+9. DESCRIPCIÓN DEL SISTEMA DE RUTINAS:
+- **Recomendadas**: 4 planes hiper-estructurados (A, B, C, D) con un campo `descripcion_cientifica`. Están hardcodeados en `rutinas.js`.
+- **Personalizadas**: Guardadas en el dispositivo. El usuario itera por un array de Lunes a Domingo añadiendo ejercicios desde un Modal dinámico.
+
+10. EXPLICACIÓN DEL SISTEMA DE RECOMENDACIÓN DE DESCANSO:
+Cuando el usuario presiona "Guardar Rutina" en el creador, un analizador (loop) recorre los 7 días (L a D):
+- **Cero días de descanso**: Si el contador de días en blanco es 0, lanza advertencia crítica de que el músculo no crecerá sin descanso.
+- **Días Seguidos**: Un contador de racha cuenta días de fuerza consecutivos. Si el contador llega a >= 4, sugiere añadir descanso en el 4to día.
+- **Interferencia de Piernas**: Si el Día(i) tiene un ejercicio cuyo `musculo` contiene "Piernas" o "Glúteos", guarda un flag `hasLegsPrev = true`. Si al Día(i+1) detecta lo mismo, dispara advertencia de interferencia de recuperación del tren inferior para evitar lesiones o fatiga central.
