@@ -18,15 +18,16 @@ const BottomTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerShown: false, // Ocultamos el header por defecto para controlarlo en cada pantalla
+        headerShown: false,
+        tabBarShowLabel: true,
         tabBarStyle: {
-          backgroundColor: '#0B0B0E', // Fondo Negro Mate
+          backgroundColor: '#0B0B0E',
           borderTopColor: '#1A1A24',
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: '#8A2BE2', // Morado Eléctrico
+        tabBarActiveTintColor: '#8A2BE2',
         tabBarInactiveTintColor: '#A0A0B0',
         tabBarIcon: ({ focused, color, size }) => {
           // Si queremos usar CatIcon en alguna tab específica o en todas
