@@ -1,0 +1,32 @@
+# Historial de Prompts del Proyecto FitCat
+
+--- PROMPT 1 ---
+"Actúa como un Desarrollador Senior de Mobile. El objetivo es construir 'FitCat', una aplicación móvil de entrenamiento personal que permita a los usuarios gestionar sus rutinas de fuerza y salud.
+Contexto de la App: La aplicación debe estar diseñada para usuarios que entrenan en el gimnasio o en casa. Necesitamos que el contenido de ejemplo incluya categorías como 'Tren Superior', 'Tren Inferior' y 'Cardio'.
+Configuración Técnica: Inicializa un proyecto de React Native con Expo con una arquitectura de carpetas profesional (src/screens, src/navigation, src/components). Instala y configura @react-navigation/native y @react-navigation/bottom-tabs.
+Navegación y Pantallas (Tabs): Dashboard, Entrenar, Historial, Ejercicios, Progreso.
+Estilo Visual: Aplica una paleta de colores 'Espacial': Fondos negro mate (#0B0B0E), acentos en morado eléctrico (#8A2BE2) y detalles en violeta neón. Usa lucide-react-native para iconos minimalistas. La UI debe usar tarjetas (Cards) con bordes redondeados y tipografía moderna.
+Objetivo: Crea la base visual navegable. No incluyas bases de datos ni lógica de guardado real aún, solo la estructura para validar el flujo."
+
+--- PROMPT 2 ---
+"El plan me parece excelente, pero quiero añadir un toque de identidad de marca 'FitCat'. Por favor, ajusta el plan para incluir lo siguiente: Componentes Temáticos: Crea un componente src/components/CatIcon.js que use el icono de 'Footprints' de Lucide pero personalizado para que parezcan patitas de gato. Usa este icono como el indicador de selección en la barra de navegación. UI con estilo: En las Card.js, añade un detalle visual sutil (como un borde o un pequeño icono en la esquina) relacionado con gatos. Librería de Gráficas: Añade react-native-chart-kit a la lista de dependencias para que la gráfica del Dashboard sea funcional visualmente."
+
+--- PROMPT 3 ---
+"Acepto, procede por favor"
+
+--- PROMPT 4 ---
+"El código me da un error en Expo Go: java.lang.String cannot be cast to java.lang.Boolean. Por favor, revisa BottomTabNavigator.js. Asegúrate de que propiedades como tabBarShowLabel, headerShown o estilos de tabBarActiveTintColor tengan los valores correctos (booleanos para los 'shown' y strings para los colores). También verifica que no falte ninguna coma en el objeto de configuración."
+
+--- PROMPT 5 ---
+"el error persiste"
+
+--- PROMPT 6 ---
+"¡Excelente trabajo con la base visual! Ahora vamos a expandir la Biblioteca de Ejercicios en EjerciciosScreen.js siguiendo estos puntos:
+Nuevos Ejercicios (Total 15): Además de los 5 actuales, añade 10 más: Zancadas, Plancha, Press Militar, Jalón al Pecho, Extensiones de Tríceps, Peso Muerto Rumano, Press Francés, Elevaciones Laterales, Burpees (HIIT Felino) y Flexiones de Pecho.
+Ficha Técnica Completa: Cada ejercicio debe ser un objeto con Explicación, Beneficios y Contraindicaciones.
+Interfaz de Detalle: Implementa un Modal que se abra al tocar cualquier ejercicio. Debe seguir la estética 'Espacial'. Usa iconos de lucide-react-native para las secciones: un rayo para beneficios y un triángulo para contraindicaciones.
+Categorización: Asegúrate de que el buscador siga funcionando para filtrar por nombre o grupo muscular.
+Por ahora, mantén los datos en un array constante dentro del código o en un archivo .json local."
+
+--- PROMPT 7 ---
+"añade un archivo de texto "Informacion.txt" en alguna parte de la carpeta que no afect al funcionamiento, en dicho documento anexa los prompts que te he enviado, la idea es ir actualizando ese documento de texto conforme trabajamos añadiendo los prompts que te doy"
