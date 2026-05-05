@@ -160,22 +160,22 @@ const DashboardScreen = () => {
       <Text style={styles.sectionTitle}>Accesos Rápidos</Text>
       <View style={styles.quickAccessRow}>
         <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('Entrenar')}>
-          <View style={[styles.iconBox, { backgroundColor: 'rgba(0,255,127,0.1)' }]}>
-            <Dumbbell color="#00FF7F" size={24} />
+          <View style={styles.iconBox}>
+            <Dumbbell color="#8A2BE2" size={24} />
           </View>
           <Text style={styles.quickText}>Entrenar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('Ejercicios')}>
-          <View style={[styles.iconBox, { backgroundColor: 'rgba(138,43,226,0.1)' }]}>
+          <View style={styles.iconBox}>
             <CalendarDays color="#8A2BE2" size={24} />
           </View>
           <Text style={styles.quickText}>Ejercicios</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('Historial')}>
-          <View style={[styles.iconBox, { backgroundColor: 'rgba(255,215,0,0.1)' }]}>
-            <TrendingUp color="#FFD700" size={24} />
+          <View style={styles.iconBox}>
+            <TrendingUp color="#8A2BE2" size={24} />
           </View>
           <Text style={styles.quickText}>Historial</Text>
         </TouchableOpacity>
@@ -222,9 +222,9 @@ const styles = StyleSheet.create({
   playButton: { backgroundColor: '#00FF7F', width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', shadowColor: '#00FF7F', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8 },
 
   sectionTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
-  quickAccessRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
-  quickCard: { backgroundColor: '#16161E', padding: 16, borderRadius: 16, alignItems: 'center', flex: 1, marginHorizontal: 4, borderWidth: 1, borderColor: '#2A2A3A' },
-  iconBox: { padding: 12, borderRadius: 16, marginBottom: 8 },
+  quickAccessRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24, gap: 8 },
+  quickCard: { backgroundColor: '#16161E', width: 100, height: 100, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flex: 1, marginHorizontal: 4, borderWidth: 1, borderColor: '#2A2A3A' },
+  iconBox: { backgroundColor: 'rgba(138,43,226,0.15)', width: 48, height: 48, borderRadius: 16, marginBottom: 8, justifyContent: 'center', alignItems: 'center' },
   quickText: { color: '#E0E0E0', fontSize: 12, fontWeight: 'bold' }
 });
 

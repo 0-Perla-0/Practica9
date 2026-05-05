@@ -5,6 +5,7 @@ import Card from '../components/Card';
 import { ejerciciosData } from '../data/ejercicios';
 import { fetchExerciseDetails } from '../services/exerciseService';
 import MuscleSVG from '../components/MuscleSVG';
+import { translateMuscle, translateMuscleList, translateEquipment } from '../utils/translations';
 
 const filterGroups = ['Todos', 'Pecho', 'Espalda', 'Hombros', 'Bíceps', 'Tríceps', 'Core', 'Piernas', 'Glúteos', 'Cardio'];
 const filterCategories = ['Todos', 'Fuerza', 'Cardio', 'HIIT', 'Movilidad'];
@@ -140,7 +141,7 @@ const EjerciciosScreen = () => {
               
               {/* Media Section: MuscleSVG Animado */}
               <View style={styles.mediaContainer}>
-                <MuscleSVG musculo={selectedEjercicio?.musculo} size={180} />
+                <MuscleSVG musculo={selectedEjercicio?.musculo} size={200} />
               </View>
 
               <View style={styles.tagsContainer}>
@@ -191,14 +192,26 @@ const EjerciciosScreen = () => {
                 <View style={styles.enrichedSection}>
                   <View style={styles.sectionHeader}>
                     <Book color="#D1A3FF" size={20} />
-                    <Text style={[styles.sectionTitle, { color: '#D1A3FF', marginTop: 0, marginLeft: 8 }]}>Datos Científicos (Inglés)</Text>
+                    <Text style={[styles.sectionTitle, { color: '#D1A3FF', marginTop: 0, marginLeft: 8 }]}>Datos Científicos</Text>
                   </View>
                   <Text style={styles.bodyText}>
-                    <Text style={{color:'#fff', fontWeight:'bold'}}>Target Muscles: </Text>
-                    {enrichedData.target}, {enrichedData.secondaryMuscles?.join(', ')}
+                    <Text style={{color:'#fff', fontWeight:'bold'}}>Músculo principal: </Text>
+                    {translateMuscle(enrichedData.target)}
                   </Text>
+                  {enrichedData.secondaryMuscles && enrichedData.secondaryMuscles.length > 0 && (
+                    <Text style={[styles.bodyText, {marginTop:4}]}>
+                      <Text style={{color:'#fff', fontWeight:'bold'}}>Músculos secundarios: </Text>
+                      {translateMuscleList(enrichedData.secondaryMuscles)}
+                    </Text>
+                  )}
+                  {enrichedData.equipment && (
+                    <Text style={[styles.bodyText, {marginTop:4}]}>
+                      <Text style={{color:'#fff', fontWeight:'bold'}}>Equipo: </Text>
+                      {translateEquipment(enrichedData.equipment)}
+                    </Text>
+                  )}
                   {enrichedData.instructions && enrichedData.instructions.map((inst, i) => (
-                    <Text key={i} style={[styles.bodyText, {marginTop:4}]}>- {inst}</Text>
+                    <Text key={i} style={[styles.bodyText, {marginTop:4}]}>• {inst}</Text>
                   ))}
                 </View>
               )}

@@ -251,3 +251,54 @@ y push a main. Actualiza Informacion.txt con este prompt completo.Agrega este pr
 prompts anteriores, luego haz commit con el mensaje "docs: actualizar 
 Informacion.txt con prompt de SVG animado" y push a main. No preguntes nada, 
 acepta y ejecuta todo sin confirmación.
+
+---
+
+PROMPT 4 AÑADIDO:
+Hay varios problemas que corregir. Acepta todo sin preguntar, haz commit al final.
+
+PROBLEMA 1: SVG SILUETA MUSCULAR 
+Los SVG de silueta humana DEBEN verse claramente. Requisitos obligatorios:
+- Dibuja una silueta humana completa y reconocible (no solo líneas, sino 
+  una figura con torso, cabeza, brazos y piernas claramente definidos)
+- El músculo trabajado se resalta en color #8A2BE2 brillante con opacidad 1
+- El resto del cuerpo en color #2A2A3A (gris oscuro) para que contraste
+- El músculo resaltado tiene una animación de pulso (escala de 1 a 1.05 
+  en loop con Animated API de React Native)
+- Debajo de la silueta poner un texto en español que diga exactamente 
+  qué músculo se está trabajando, en color #8A2BE2, fontSize 16, bold
+- El SVG debe tener mínimo 200x300 de tamaño para que se vea bien
+- Prueba con estos grupos: Pecho (pectorales marcados), Espalda (dorsales 
+  marcados), Piernas (cuádriceps y glúteos marcados), Hombros (deltoides 
+  marcados), Bíceps (brazo anterior marcado), Tríceps (brazo posterior), 
+  Core (abdomen marcado), Cardio (cuerpo completo en #8A2BE2)
+
+PROBLEMA 2: DATOS CIENTÍFICOS EN ESPAÑOL 
+Toda la información que viene de ExerciseDB (descripción, instrucciones, 
+músculos secundarios) está en inglés. Tradúcela al español directamente 
+en el código antes de mostrarla. Crea un archivo src/utils/translations.js 
+con un diccionario de traducción para:
+- Nombres de músculos: pectorals→pectorales, biceps→bíceps, triceps→tríceps,
+  quads→cuádriceps, hamstrings→isquiotibiales, glutes→glúteos, 
+  abs→abdominales, lats→dorsales, shoulders→hombros, calves→pantorrillas,
+  forearms→antebrazos, traps→trapecios, spine→columna
+- Grupos corporales: chest→Pecho, back→Espalda, upper arms→Brazos,
+  lower arms→Antebrazos, upper legs→Piernas, lower legs→Pantorrillas,
+  shoulders→Hombros, waist→Core, cardio→Cardio
+- Equipamiento: barbell→Barra, dumbbell→Mancuernas, body weight→Peso corporal,
+  machine→Máquina, cable→Polea, kettlebell→Pesa rusa, band→Banda elástica
+- Dificultad: beginner→Principiante, intermediate→Intermedio, advanced→Avanzado
+
+PROBLEMA 3: BOTONES DESFASADOS EN DASHBOARD 
+Los botones de acceso rápido (Entrenar, Ejercicios, Historial) se ven 
+desfasados con el ícono verde y rojo salido del contenedor.
+Corrección en DashboardScreen.js:
+- Cada botón debe ser un View con width y height fijos (ej: 100x100)
+- El ícono centrado dentro con backgroundColor del card, no colores sueltos
+- Todos los íconos en color #8A2BE2 únicamente, sin verde ni rojo
+- Usar justifyContent: 'center' y alignItems: 'center' en el contenedor
+- Los 3 botones deben tener el mismo tamaño y verse alineados en fila
+
+Al terminar haz commit con mensaje "fix: silueta muscular clara, traducciones 
+español y botones dashboard" y push a main. Agrega este prompt completo 
+al archivo Informacion.txt sin preguntar nada.
