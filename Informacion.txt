@@ -210,3 +210,44 @@ mejoras de organización" y push a main. Luego actualiza Informacion.txt con
 todos los cambios realizados.                   Y al terminar actualiza Informacion.txt agregando este prompt completo 
 tal cual está escrito, sin omitir nada, debajo de los prompts anteriores 
 que ya están guardados ahí.
+
+---
+
+PROMPT 3 AÑADIDO:
+La API de ExerciseDB v2.2 ya no devuelve gifUrl en su respuesta, solo devuelve 
+texto (descripción, instrucciones, músculos). Hay que cambiar la estrategia 
+para mostrar imágenes de ejercicios:
+
+SOLUCIÓN - Usar imágenes estáticas de Wger API (gratis, sin límite):
+La URL del formato es: https://wger.de/api/v2/exercise/search/?term={nombre_en_ingles}&language=english&format=json
+O directamente imágenes de: https://wger.de/static/exercise-images/
+
+IMPLEMENTA esto en exerciseService.js:
+1. Usa la respuesta actual de ExerciseDB para obtener: descripción en inglés, 
+   instrucciones paso a paso, músculos trabajados (úsalos para enriquecer 
+   los datos que ya tenemos en español)
+2. Para la imagen/animación del ejercicio, genera un SVG animado con CSS 
+   directamente en React Native usando el grupo muscular del ejercicio:
+   - Dibuja una silueta humana simple (stick figure estilizado)
+   - Resalta en color #8A2BE2 el músculo que trabaja ese ejercicio
+   - Anima con una pequeña pulsación (opacity animation en loop) el músculo resaltado
+   - Pecho → resaltar área del pecho
+   - Espalda → resaltar área dorsal
+   - Piernas → resaltar área de muslos/glúteos
+   - Hombros → resaltar deltoides
+   - Bíceps/Tríceps → resaltar brazos
+   - Core → resaltar abdomen
+   - Cardio → resaltar cuerpo completo
+3. Esto se ve más profesional que un GIF y no depende de APIs externas
+4. El SVG animado va donde antes iba el GIF en el modal de ejercicios y 
+   en el modo entrenamiento
+
+También corrige el error 429: estás haciendo demasiadas llamadas simultáneas.
+Implementa un queue de requests con delay de 500ms entre cada llamada para 
+no superar el rate limit.
+
+Al terminar haz commit con mensaje "fix: SVG animado muscular reemplaza GIF API" 
+y push a main. Actualiza Informacion.txt con este prompt completo.Agrega este prompt completo tal cual al archivo Informacion.txt debajo de los 
+prompts anteriores, luego haz commit con el mensaje "docs: actualizar 
+Informacion.txt con prompt de SVG animado" y push a main. No preguntes nada, 
+acepta y ejecuta todo sin confirmación.
