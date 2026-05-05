@@ -1,32 +1,185 @@
-# Historial de Prompts del Proyecto FitCat
+1. PROMPT ORIGINAL COMPLETO:
+Eres un agente experto en React Native. Tienes acceso completo a este repositorio.
+Tu tarea es expandir y mejorar esta app de fitness felina al máximo, conservando
+exactamente el diseño oscuro actual (colores #0B0B0E, #16161E, #8A2BE2, #00FF7F,
+tipografía y estilo de Cards existentes). Trabaja por etapas, una a la vez,
+mostrándome cada cambio y pidiendo confirmación antes de continuar (modo Review-driven).
 
---- PROMPT 1 ---
-"Actúa como un Desarrollador Senior de Mobile. El objetivo es construir 'FitCat', una aplicación móvil de entrenamiento personal que permita a los usuarios gestionar sus rutinas de fuerza y salud.
-Contexto de la App: La aplicación debe estar diseñada para usuarios que entrenan en el gimnasio o en casa. Necesitamos que el contenido de ejemplo incluya categorías como 'Tren Superior', 'Tren Inferior' y 'Cardio'.
-Configuración Técnica: Inicializa un proyecto de React Native con Expo con una arquitectura de carpetas profesional (src/screens, src/navigation, src/components). Instala y configura @react-navigation/native y @react-navigation/bottom-tabs.
-Navegación y Pantallas (Tabs): Dashboard, Entrenar, Historial, Ejercicios, Progreso.
-Estilo Visual: Aplica una paleta de colores 'Espacial': Fondos negro mate (#0B0B0E), acentos en morado eléctrico (#8A2BE2) y detalles en violeta neón. Usa lucide-react-native para iconos minimalistas. La UI debe usar tarjetas (Cards) con bordes redondeados y tipografía moderna.
-Objetivo: Crea la base visual navegable. No incluyas bases de datos ni lógica de guardado real aún, solo la estructura para validar el flujo."
+ETAPA 1: BIBLIOTECA DE EJERCICIOS
+Amplía src/data/ejercicios.js de 15 a mínimo 50 ejercicios cubriendo todos los
+grupos musculares (pecho, espalda, hombros, bíceps, tríceps, core, piernas,
+glúteos, cardio, movilidad).
 
---- PROMPT 2 ---
-"El plan me parece excelente, pero quiero añadir un toque de identidad de marca 'FitCat'. Por favor, ajusta el plan para incluir lo siguiente: Componentes Temáticos: Crea un componente src/components/CatIcon.js que use el icono de 'Footprints' de Lucide pero personalizado para que parezcan patitas de gato. Usa este icono como el indicador de selección en la barra de navegación. UI con estilo: En las Card.js, añade un detalle visual sutil (como un borde o un pequeño icono en la esquina) relacionado con gatos. Librería de Gráficas: Añade react-native-chart-kit a la lista de dependencias para que la gráfica del Dashboard sea funcional visualmente."
+Cada ejercicio debe tener:
+- id, nombre, musculo, equipo
+- pasos: array de strings con cada paso numerado
+- explicacion, beneficios, contraindicaciones (ya existen, mantener)
+- dificultad: 'Principiante' | 'Intermedio' | 'Avanzado'
+- categoria: 'Fuerza' | 'Cardio' | 'Movilidad' | 'HIIT'
+- sets_recomendados, reps_recomendadas, descanso_segundos
+- exerciseDbId: ID correspondiente en ExerciseDB API para obtener el GIF animado
 
---- PROMPT 3 ---
-"Acepto, procede por favor"
+Para las imágenes animadas de cada ejercicio usa la API de ExerciseDB
+(https://exercisedb.p.rapidapi.com). Esta API devuelve un campo gifUrl
+con un GIF animado de una persona real ejecutando el movimiento, exactamente
+como en apps profesionales de fitness.
 
---- PROMPT 4 ---
-"El código me da un error en Expo Go: java.lang.String cannot be cast to java.lang.Boolean. Por favor, revisa BottomTabNavigator.js. Asegúrate de que propiedades como tabBarShowLabel, headerShown o estilos de tabBarActiveTintColor tengan los valores correctos (booleanos para los 'shown' y strings para los colores). También verifica que no falte ninguna coma en el objeto de configuración."
+Crea un archivo src/services/exerciseService.js con:
+- Una función fetchExerciseGif(exerciseDbId) que llame a la API con la key
+- Una función searchExerciseByName(nombre) para buscar por nombre
+- Manejo de errores: si la API falla o no hay conexión, mostrar un placeholder
+  SVG minimalista con silueta del movimiento en color #8A2BE2
+- Cachear los GIFs en memoria para no repetir llamadas
 
---- PROMPT 5 ---
-"el error persiste"
+En EjerciciosScreen.js, al tocar un ejercicio el modal debe mostrar:
+- GIF animado de persona real haciendo el ejercicio (desde ExerciseDB API),
+  centrado, con fondo #0B0B0E, bordes redondeados y borde sutil color #8A2BE2
+- Indicador de carga (ActivityIndicator morado) mientras carga el GIF
+- Pasos numerados para ejecutarlo correctamente
+- Badges de dificultad, categoría, músculo y equipo
+- Sets y reps recomendados
+- Beneficios y contraindicaciones
+- Botón "Agregar al entrenamiento de hoy"
 
---- PROMPT 6 ---
-"¡Excelente trabajo con la base visual! Ahora vamos a expandir la Biblioteca de Ejercicios en EjerciciosScreen.js siguiendo estos puntos:
-Nuevos Ejercicios (Total 15): Además de los 5 actuales, añade 10 más: Zancadas, Plancha, Press Militar, Jalón al Pecho, Extensiones de Tríceps, Peso Muerto Rumano, Press Francés, Elevaciones Laterales, Burpees (HIIT Felino) y Flexiones de Pecho.
-Ficha Técnica Completa: Cada ejercicio debe ser un objeto con Explicación, Beneficios y Contraindicaciones.
-Interfaz de Detalle: Implementa un Modal que se abra al tocar cualquier ejercicio. Debe seguir la estética 'Espacial'. Usa iconos de lucide-react-native para las secciones: un rayo para beneficios y un triángulo para contraindicaciones.
-Categorización: Asegúrate de que el buscador siga funcionando para filtrar por nombre o grupo muscular.
-Por ahora, mantén los datos en un array constante dentro del código o en un archivo .json local."
+Filtros en la lista de ejercicios: por grupo muscular, categoría, dificultad y equipo.
 
---- PROMPT 7 ---
-"añade un archivo de texto "Informacion.txt" en alguna parte de la carpeta que no afect al funcionamiento, en dicho documento anexa los prompts que te he enviado, la idea es ir actualizando ese documento de texto conforme trabajamos añadiendo los prompts que te doy"
+IMPORTANTE: Antes de implementar el servicio de la API, muéstrame el código
+de src/services/exerciseService.js y pide confirmación para que yo pueda
+ingresar mi RapidAPI key de ExerciseDB en el lugar correcto.
+
+ETAPA 2: REGISTRO DE ENTRENAMIENTOS (EntrenarScreen.js) 
+Hacer la pantalla completamente funcional:
+- Crear y guardar rutinas personalizadas con nombre
+- Buscar ejercicios de la biblioteca y agregarlos a la rutina
+- Por cada ejercicio: registrar series, reps por serie y peso usado (kg)
+- Modo "Entrenamiento activo":
+  * Temporizador de sesión visible (cronómetro que cuenta hacia arriba)
+  * Temporizador de descanso predefinido (60s) y personalizable entre series,
+    con cuenta regresiva visible y alerta visual (borde rojo pulsante) cuando llega a 0
+  * Marcar cada serie como completada con checkmark verde (#00FF7F)
+- Al finalizar: resumen con duración total, volumen total (kg), ejercicios completados
+- Guardar sesión completa en AsyncStorage
+
+ETAPA 3: HISTORIAL (HistorialScreen.js) 
+- Leer sesiones reales guardadas con AsyncStorage (reemplazar datos mock)
+- Agrupar por semana
+- Al tocar una sesión: ver detalle completo (ejercicios, series, pesos, reps)
+- Mostrar: fecha, duración, volumen total
+
+ETAPA 4: PROGRESO (ProgresoScreen.js) 
+- Registro de peso corporal con historial y gráfica de evolución (LineChart)
+- Medidas corporales opcionales (cintura, cadera, pecho)
+- Récords personales (PR) detectados automáticamente: cuando el usuario supera
+  su máximo peso en un ejercicio, mostrar badge de PR con animación
+- Racha de días entrenados calculada desde historial real
+- Gráfica de volumen total semanal
+- Estadísticas: ejercicio favorito (más frecuente), grupo muscular más trabajado
+
+-ETAPA 5: RUTINAS PREDEFINIDAS 
+Crear src/data/rutinas.js con rutinas listas para usar:
+- Push (Pecho, Hombros, Tríceps)
+- Pull (Espalda, Bíceps)
+- Legs (Piernas, Glúteos)
+- Full Body
+- HIIT Cardio
+- Core y Movilidad
+
+Cada rutina tiene ejercicios asignados de la biblioteca. El usuario puede
+seleccionar una rutina y cargarla directamente en el modo entrenamiento activo.
+
+ETAPA 6: DASHBOARD (DashboardScreen.js) 
+- Saludo dinámico según hora del día (mañana/tarde/noche) con toque felino
+- Mostrar último entrenamiento registrado (real, desde AsyncStorage)
+- Acceso rápido a: Entrenar, Ejercicios, Historial, Progreso
+- Racha actual calculada desde datos reales
+- Gráfica de actividad semanal con datos reales
+
+ETAPA 7: PERSISTENCIA 
+Crear src/storage/storage.js con funciones reutilizables:
+- saveSession / getSessions
+- saveRoutine / getRoutines
+- saveBodyWeight / getBodyWeights
+- savePR / getPRs
+Usar AsyncStorage de @react-native-async-storage/async-storage (disponible en Expo).
+
+--- REGLAS IMPORTANTES ---
+- NO cambies colores, tipografía ni el componente Card existente
+- NO instales librerías nuevas sin avisarme primero
+- Mantén el tema felino en textos motivacionales
+- Al terminar TODAS las etapas, actualiza el archivo Informacion.txt del
+  repositorio con TODO lo siguiente:
+  ...
+
+
+2. RESUMEN DE CAMBIOS POR ETAPA:
+- Etapa 1: Ampliamos la base de datos a 50 ejercicios con id de API. Creamos el servicio `exerciseService.js` con soporte para caché y fetch de GIFs desde RapidAPI. Actualizamos `EjerciciosScreen.js` para mostrar un modal con GIFs, pasos, indicadores y añadir filtros dinámicos.
+- Etapa 7: Implementamos `storage.js` usando `@react-native-async-storage/async-storage` para persistir sesiones, rutinas, peso corporal y PRs de forma asíncrona.
+- Etapa 5: Creamos `src/data/rutinas.js` con 6 rutinas prediseñadas (Push, Pull, Legs, Full Body, HIIT, Movilidad) enlazadas a los nuevos ejercicios.
+- Etapa 2: Rediseñamos `EntrenarScreen.js` para tener un modo de entrenamiento activo. Incluye temporizador general, temporizador de descanso, checkmarks interactivos por serie y capacidad de registro de peso/reps. Guarda la sesión final al terminar.
+- Etapa 3: Modificamos `HistorialScreen.js` para obtener datos de AsyncStorage, agrupando sesiones por semana y año. Cuenta con un modal para ver el detalle de cada ejercicio.
+- Etapa 4: Adaptamos `ProgresoScreen.js` conectando los datos reales para el peso, rachas y volúmenes semanales usando gráficas. Las PRs se guardan y leen correctamente de la base de datos.
+- Etapa 6: Añadimos un saludo temporal a `DashboardScreen.js`, cálculos reales de la racha actual desde AsyncStorage, acceso a atajos y la gráfica que suma los minutos entrenados de la semana actual.
+
+3. DESCRIPCIÓN DE PANTALLAS:
+- DashboardScreen: Pantalla de inicio de la aplicación. Muestra el estado actual del usuario, el último entrenamiento registrado, y atajos rápidos. 
+- EjerciciosScreen: Una enciclopedia interactiva para buscar y filtrar por más de 50 ejercicios, cargando un GIF en un modal, dando las instrucciones paso a paso.
+- EntrenarScreen: El núcleo de la actividad. Permite arrancar el entrenamiento, manejar temporizadores de ejecución y descansos y guardar el registro real del volumen usado.
+- HistorialScreen: Revisa todos los entrenamientos anteriores, agrupados dinámicamente y con la posibilidad de inspeccionar en detalle el peso y series exactas.
+- ProgresoScreen: Pantalla analítica. Permite ingresar el peso del usuario, ver récords personales de levantamientos, y rachas de actividad activa.
+
+4. ESTRUCTURA COMPLETA DE ARCHIVOS:
+Practica9/
+├── App.js
+├── app.json
+├── index.js
+├── package.json
+├── package-lock.json
+├── README.md
+├── Informacion.txt
+├── assets/
+└── src/
+    ├── components/
+    │   └── Card.js
+    ├── data/
+    │   ├── ejercicios.js
+    │   └── rutinas.js
+    ├── navigation/
+    │   └── AppNavigator.js
+    ├── screens/
+    │   ├── DashboardScreen.js
+    │   ├── EjerciciosScreen.js
+    │   ├── EntrenarScreen.js
+    │   ├── HistorialScreen.js
+    │   └── ProgresoScreen.js
+    ├── services/
+    │   └── exerciseService.js
+    └── storage/
+        └── storage.js
+
+5. INSTRUCCIONES PARA CORRER EL PROYECTO:
+Abre una terminal en la ruta del proyecto y ejecuta:
+1. `npm install`
+2. `npx expo start`
+Luego, puedes escanear el código QR usando la app de Expo Go en tu teléfono (iOS o Android) o presionar 'a' para usar un emulador de Android / 'i' para emulador iOS.
+
+6. FLUJO DE NAVEGACIÓN:
+El usuario ingresa por defecto a Dashboard. Desde ahí, tiene un bottom tab navigation que le permite ir a las otras pantallas (Dashboard, Ejercicios, Entrenar, Historial, Progreso). Al entrar a 'Entrenar', elige una rutina y entra al "modo de entrenamiento activo" que lo confina a la rutina hasta que decide "Finalizar", lo cual lanza un modal de completado, y la sesión puede ser revisada en la pestaña 'Historial'.
+
+7. INSTRUCCIONES PARA OBTENER Y CONFIGURAR LA API KEY DE EXERCISEDB:
+1. Dirígete a https://rapidapi.com/ y créate una cuenta si no tienes una.
+2. Busca "ExerciseDB" en la barra superior o ve a https://rapidapi.com/justin-t/api/exercisedb
+3. Suscríbete al plan gratuito (o "Basic") que permite un número limitado de peticiones al mes.
+4. En el área de "Endpoints", bajo tu código de ejemplo verás tu "X-RapidAPI-Key".
+5. Copia esa cadena alfanumérica larga y pégala en el archivo `src/services/exerciseService.js` reemplazando el valor de la constante `RAPIDAPI_KEY`.
+
+8. LISTA DE DEPENDENCIAS USADAS:
+- @react-navigation/native
+- @react-navigation/bottom-tabs
+- react-native-safe-area-context
+- react-native-screens
+- lucide-react-native
+- react-native-svg
+- react-native-chart-kit
+- @react-native-async-storage/async-storage
+- expo (y su ecosistema)
+- react, react-native
