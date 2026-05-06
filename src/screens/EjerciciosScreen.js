@@ -210,9 +210,6 @@ const EjerciciosScreen = () => {
                       {translateEquipment(enrichedData.equipment)}
                     </Text>
                   )}
-                  {enrichedData.instructions && enrichedData.instructions.map((inst, i) => (
-                    <Text key={i} style={[styles.bodyText, {marginTop:4}]}>• {inst}</Text>
-                  ))}
                 </View>
               )}
 

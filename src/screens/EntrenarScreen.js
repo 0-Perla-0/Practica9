@@ -5,7 +5,7 @@ import { useIsFocused } from '@react-navigation/native';
 import Card from '../components/Card';
 import { rutinasData } from '../data/rutinas';
 import { ejerciciosData } from '../data/ejercicios';
-import { saveSession, savePR, getRoutines, saveRoutine } from '../storage/storage';
+import { saveSession, savePR, getRoutines, saveRoutine, deleteRoutine } from '../storage/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MuscleSVG from '../components/MuscleSVG';
 
@@ -289,11 +289,34 @@ export default function EntrenarScreen() {
     return Object.keys(groups).sort().map(key => ({ title: key, data: groups[key] }));
   }, []);
 
-  const renderRoutineCard = ({ item }) => (
+  const handleDeleteRoutine = (routine) => {
+    Alert.alert(
+      'Eliminar Rutina',
+      `¿Estás seguro de eliminar "${routine.nombre}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Eliminar', style: 'destructive', onPress: async () => {
+          await deleteRoutine(routine.id);
+          loadUserData();
+        }}
+      ]
+    );
+  };
+
+  const renderRoutineCard = ({ item }) => {
+    const isCustom = !item.descripcion_cientifica;
+    return (
     <Card style={styles.cardItem}>
       <View style={styles.rutinaHeader}>
         <View style={styles.tipoBadge}><Text style={styles.tipoText}>{item.nivel}</Text></View>
-        <Text style={styles.duracionText}>{item.descripcion_cientifica ? 'Science-based' : 'Custom'}</Text>
+        <View style={{flexDirection:'row', alignItems:'center', gap: 8}}>
+          <Text style={styles.duracionText}>{isCustom ? 'Custom' : 'Science-based'}</Text>
+          {isCustom && (
+            <TouchableOpacity onPress={() => handleDeleteRoutine(item)}>
+              <Trash2 color="#FF4500" size={20} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
       <Text style={styles.rutinaNombre}>{item.nombre}</Text>
       <Text style={styles.rutinaDesc}>{item.descripcion}</Text>
@@ -338,13 +361,14 @@ export default function EntrenarScreen() {
               const dbEx = ejerciciosData.find(e => e.id === ex.ejercicioId);
               return (
                 <View key={i} style={styles.dayDetailRow}>
-                  <View style={styles.dayDetailGifBox}>
-                    {dbEx ? <MuscleSVG musculo={dbEx.musculo} size={30} /> : <Dumbbell color="#8A2BE2" size={20} />}
+                  <View style={styles.dayDetailIconBox}>
+                    <Dumbbell color="#8A2BE2" size={16} />
                   </View>
                   <View style={{flex: 1}}>
                     <Text style={styles.dayDetailExName}>{dbEx?.nombre}</Text>
                     <Text style={styles.dayDetailExSets}>{ex.sets} sets x {ex.reps} reps</Text>
                   </View>
+                  {dbEx && <View style={styles.dayDetailBadge}><Text style={styles.dayDetailBadgeText}>{dbEx.musculo}</Text></View>}
                 </View>
               );
             })
@@ -356,7 +380,8 @@ export default function EntrenarScreen() {
         <Text style={styles.usePlanText}>Usar este plan</Text>
       </TouchableOpacity>
     </Card>
-  );
+    );
+  };
 
   if (activeWorkoutData) {
     return (
@@ -519,10 +544,13 @@ export default function EntrenarScreen() {
                     const dbEx = ejerciciosData.find(e => e.id === ex.ejercicioId);
                     return (
                       <View key={idx} style={styles.creatorRow}>
-                        <View style={styles.creatorGifBox}>
-                          {dbEx && <MuscleSVG musculo={dbEx.musculo} size={24} />}
+                        <View style={styles.creatorIconBox}>
+                          <Dumbbell color="#8A2BE2" size={16} />
                         </View>
-                        <Text style={styles.creatorExText}>{dbEx?.nombre}</Text>
+                        <View style={{flex:1}}>
+                          <Text style={styles.creatorExText}>{dbEx?.nombre}</Text>
+                          {dbEx && <Text style={{color:'#A0A0B0', fontSize:11}}>{dbEx.musculo} • {dbEx.dificultad}</Text>}
+                        </View>
                         <TouchableOpacity onPress={() => handleDeleteExercise(day, idx)}>
                           <Trash2 color="#FF4500" size={20} />
                         </TouchableOpacity>
@@ -560,10 +588,16 @@ export default function EntrenarScreen() {
               )}
               renderItem={({item}) => (
                 <TouchableOpacity style={{paddingVertical:12, borderBottomWidth:1, borderColor:'#2A2A3A', flexDirection:'row', alignItems:'center'}} onPress={()=>handleAddExerciseToDay(item)}>
-                  <View style={{backgroundColor:'rgba(138,43,226,0.1)', width:40, height:40, borderRadius:8, justifyContent:'center', alignItems:'center', marginRight:12}}>
-                    <MuscleSVG musculo={item.musculo} size={24} />
+                  <View style={{backgroundColor:'rgba(138,43,226,0.1)', width:36, height:36, borderRadius:8, justifyContent:'center', alignItems:'center', marginRight:12}}>
+                    <Dumbbell color="#8A2BE2" size={18} />
                   </View>
-                  <Text style={{color:'#E0E0E0', fontSize:16}}>{item.nombre}</Text>
+                  <View style={{flex:1}}>
+                    <Text style={{color:'#E0E0E0', fontSize:15}}>{item.nombre}</Text>
+                    <View style={{flexDirection:'row', gap:6, marginTop:2}}>
+                      <Text style={{color:'#D1A3FF', fontSize:11, backgroundColor:'rgba(138,43,226,0.15)', paddingHorizontal:6, paddingVertical:1, borderRadius:4, overflow:'hidden'}}>{item.musculo}</Text>
+                      <Text style={{color:'#A0A0B0', fontSize:11}}>{item.dificultad}</Text>
+                    </View>
+                  </View>
                 </TouchableOpacity>
               )}
               stickySectionHeadersEnabled={false}
@@ -607,10 +641,12 @@ const styles = StyleSheet.create({
   dayDetailBox: { backgroundColor: '#16161E', padding: 12, borderRadius: 8, marginBottom: 16, borderWidth: 1, borderColor: '#2A2A3A' },
   dayDetailTitle: { color: '#E0E0E0', fontWeight: 'bold', marginBottom: 8 },
   restDayTextCat: { color: '#FF4500', fontStyle: 'italic', textAlign: 'center', marginVertical: 8 },
-  dayDetailRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, backgroundColor: '#0B0B0E', padding: 8, borderRadius: 8 },
-  dayDetailGifBox: { width: 40, height: 40, borderRadius: 8, overflow: 'hidden', marginRight: 12, backgroundColor: '#16161E', alignItems: 'center', justifyContent: 'center' },
+  dayDetailRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, backgroundColor: '#0B0B0E', padding: 10, borderRadius: 8 },
+  dayDetailIconBox: { width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(138,43,226,0.15)', marginRight: 10, alignItems: 'center', justifyContent: 'center' },
   dayDetailExName: { color: '#D1A3FF', fontSize: 14, fontWeight: 'bold' },
   dayDetailExSets: { color: '#A0A0B0', fontSize: 12 },
+  dayDetailBadge: { backgroundColor: 'rgba(138,43,226,0.15)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, marginLeft: 6 },
+  dayDetailBadgeText: { color: '#D1A3FF', fontSize: 10, fontWeight: '600' },
   usePlanBtn: { backgroundColor: '#8A2BE2', padding: 12, borderRadius: 8, alignItems: 'center' },
   usePlanText: { color: '#fff', fontWeight: 'bold' },
   emptyContainer: { alignItems: 'center', marginTop: 40 },
@@ -625,8 +661,8 @@ const styles = StyleSheet.create({
   dayTitle: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   restDayText: { color: '#FF4500', fontSize: 14, fontStyle: 'italic' },
   creatorRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0B0B0E', padding: 8, borderRadius: 8, marginTop: 4 },
-  creatorGifBox: { width: 36, height: 36, borderRadius: 6, overflow: 'hidden', marginRight: 12, backgroundColor: '#16161E', alignItems: 'center', justifyContent: 'center' },
-  creatorExText: { color: '#A0A0B0', fontSize: 14, flex: 1 },
+  creatorIconBox: { width: 28, height: 28, borderRadius: 6, backgroundColor: 'rgba(138,43,226,0.15)', marginRight: 10, alignItems: 'center', justifyContent: 'center' },
+  creatorExText: { color: '#E0E0E0', fontSize: 14, fontWeight: '600' },
   saveCreatorBtn: { backgroundColor: '#00FF7F', margin: 20, padding: 16, borderRadius: 12, alignItems: 'center' },
   saveCreatorText: { color: '#16161E', fontSize: 18, fontWeight: 'bold' },
   pickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },

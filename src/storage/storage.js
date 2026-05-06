@@ -64,6 +64,18 @@ export const saveRoutine = async (routineData) => {
   }
 };
 
+export const deleteRoutine = async (routineId) => {
+  try {
+    const routines = await getRoutines();
+    const updatedRoutines = routines.filter(r => r.id !== routineId);
+    await AsyncStorage.setItem(STORAGE_KEYS.ROUTINES, JSON.stringify(updatedRoutines));
+    return true;
+  } catch (error) {
+    console.error('Error deleting routine:', error);
+    throw error;
+  }
+};
+
 // --- PESO CORPORAL ---
 export const getBodyWeights = async () => {
   try {

@@ -302,3 +302,37 @@ Corrección en DashboardScreen.js:
 Al terminar haz commit con mensaje "fix: silueta muscular clara, traducciones 
 español y botones dashboard" y push a main. Agrega este prompt completo 
 al archivo Informacion.txt sin preguntar nada.
+
+---
+
+PROMPT 5 AÑADIDO:
+Hay problemas visuales y de traducción. Acepta todo sin preguntar, 
+haz commit al final.
+
+ PROBLEMA 1: SILUETA MUSCULAR AMONTONADA 
+En el selector de ejercicios para agregar a rutina, la silueta SVG y el texto 
+del músculo se enciman con el nombre del ejercicio.
+Corrección:
+- En listas de ejercicios NO mostrar la silueta SVG ni el texto del músculo
+- Solo mostrar: nombre del ejercicio, badge del músculo y badge de dificultad
+- La silueta SVG animada SOLO va en el modal de detalle y en modo 
+  entrenamiento activo, nunca en listas
+
+PROBLEMA 2: TRADUCCIÓN AL ESPAÑOL 
+Toda la info sigue en inglés. Corrección obligatoria:
+- Las instrucciones que vienen en inglés de la API NO mostrarlas,
+  usar en su lugar los "pasos" que ya están en español en ejercicios.js
+- Aplicar translations.js en todos los lugares donde se muestren datos 
+  de ejercicios: bodyPart, target, secondaryMuscles, equipment, difficulty
+- Verificar que translations.js se importe correctamente en todas las pantallas
+
+PROBLEMA 3: ELIMINAR RUTINAS 
+- En la lista de rutinas, cada rutina creada por el usuario tiene un ícono 
+  de basura (Trash2) en color #FF4500
+- Al tocarlo, mostrar Alert de confirmación antes de eliminar
+- Al confirmar, eliminar de AsyncStorage y actualizar la lista
+- Las rutinas predefinidas del sistema NO se pueden eliminar
+
+Al terminar haz commit con mensaje "fix: layout listas, traducciones español 
+y eliminar rutinas" y push a main. Agrega este prompt completo al 
+Informacion.txt sin preguntar.
