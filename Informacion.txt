@@ -336,3 +336,24 @@ PROBLEMA 3: ELIMINAR RUTINAS
 Al terminar haz commit con mensaje "fix: layout listas, traducciones español 
 y eliminar rutinas" y push a main. Agrega este prompt completo al 
 Informacion.txt sin preguntar.
+
+---
+
+PROMPT 6 AÑADIDO:
+Los botones de Accesos Rápidos en DashboardScreen.js siguen mal, 
+el ícono verde y rojo se sale del contenedor. Corrígelo así:
+
+- Cada botón debe ser un TouchableOpacity con estilo fijo:
+  width: 100, height: 100, borderRadius: 16
+  backgroundColor: '#16161E'
+  borderWidth: 1, borderColor: '#2A2A3A'
+  justifyContent: 'center', alignItems: 'center'
+- TODOS los íconos en color #8A2BE2 únicamente, sin verde (#00FF7F) 
+  ni rojo ni naranja, solo morado
+- El texto debajo del ícono en color #E0E0E0, fontSize: 13
+- Los 3 botones dentro de un View con flexDirection: 'row' y 
+  justifyContent: 'space-between'
+- No uses backgroundColor en el ícono, solo en el TouchableOpacity
+
+Haz commit con mensaje "fix: botones accesos rápidos dashboard" 
+y push a main. Agrega este prompt al Informacion.txt.

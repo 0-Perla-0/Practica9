@@ -222,10 +222,10 @@ const styles = StyleSheet.create({
   playButton: { backgroundColor: '#00FF7F', width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', shadowColor: '#00FF7F', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8 },
 
   sectionTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
-  quickAccessRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24, gap: 8 },
-  quickCard: { backgroundColor: '#16161E', width: 100, height: 100, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flex: 1, marginHorizontal: 4, borderWidth: 1, borderColor: '#2A2A3A' },
-  iconBox: { backgroundColor: 'rgba(138,43,226,0.15)', width: 48, height: 48, borderRadius: 16, marginBottom: 8, justifyContent: 'center', alignItems: 'center' },
-  quickText: { color: '#E0E0E0', fontSize: 12, fontWeight: 'bold' }
+  quickAccessRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
+  quickCard: { backgroundColor: '#16161E', width: 100, height: 100, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#2A2A3A' },
+  iconBox: { marginBottom: 8, justifyContent: 'center', alignItems: 'center' },
+  quickText: { color: '#E0E0E0', fontSize: 13 }
 });
 
 export default DashboardScreen;
